@@ -1,0 +1,212 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<App>
+  <Name>Gates</Name>
+  <LoginUser>testuser@gates.com</LoginUser>
+  <Navigation>
+    <MenuItem name="Home" linkTo="index.html"></MenuItem>
+    <MenuItem name="Manage">
+      <SubMenuItem linkTo="Application">Application Dashboard</SubMenuItem>
+      <SubMenuItem linkTo="Database">Database Dashboard</SubMenuItem>
+      <SubMenuItem linkTo="WebApps">Web Apps Dashboard</SubMenuItem>
+      <SubMenuItem linkTo="ServerDetails">Server Details Dashboard</SubMenuItem>
+      <SubMenuItem linkTo="Server">Server Dashboard</SubMenuItem>
+    </MenuItem>
+    <MenuItem name="Administrator">
+      <SubMenuItem>Users</SubMenuItem>
+    </MenuItem>
+  </Navigation>
+  <Entities>
+    <Entity name="Application" title="Application" hasSearch="true">
+      <ListProperties WithSelector="true">
+        <Property>Name</Property>
+        <Property>Description</Property>
+        <Property>Type</Property>
+        <Property>Owner</Property>
+        <Property>Functional</Property>
+        <Property>Sub Functional</Property>
+      </ListProperties>
+      <ListActions>
+        <Action linkTo="Application">Add Application</Action>
+        <Action>Map Servers</Action>
+        <Action>Consolidation</Action>
+      </ListActions>
+      <ListData>
+        <Data>
+          <Name>PTS1</Name>
+          <Description>The Power Transmission Specification system (PTS) d Industrial product lines...</Description>
+          <Type>Home Grown</Type>
+          <Owner>Julia</Owner>
+          <Functional>Engineering</Functional>
+          <SubFunctional>Specification Sysytem</SubFunctional>
+        </Data>
+        <Data>
+          <Name>PTS2</Name>
+          <Description>The Power Transmission Specification system (PTS2) d Industrial product lines...</Description>
+          <Type>Home Grown</Type>
+          <Owner>Julia</Owner>
+          <Functional>Engineering</Functional>
+          <SubFunctional>Specification Sysytem</SubFunctional>
+        </Data>
+      </ListData>
+      <AddProperties>
+        <Section name="Details" zone="1">
+          <Field type="1" label="Name"></Field>
+          <Field type="2" label="Description"></Field>
+          <Field type="1" label="Type"></Field>
+          <Field type="6" label="Functional"></Field>
+          <Field type="6" label="Sub Functional"></Field>
+        </Section>
+        <Section name="Rating" zone="1">
+          <Field type="7" label="Functional Completeness"></Field>
+          <Field type="4" label="Business Criticality"></Field>
+          <Field type="4" label="Application Stability"></Field>
+          <Field type="4" label="Technology Future Proof"></Field>
+          <Field type="4" label="Maintainability"></Field>
+        </Section>
+        <Section name="Technology Applicable" zone="2">
+          <Field type="5" label="Front End">
+            <Options>
+              <Option label="Java Script"></Option>
+              <Option label="HTML"></Option>
+            </Options>
+          </Field>
+          <Field type="4" label="Server"></Field>
+          <Field type="4" label="Database"></Field>
+        </Section>
+        <Section name="Database Applicable" zone="2">
+          <Field type="1" label="SQL Server 2006"></Field>
+          <Field type="1" label="SQL Server 2008"></Field>
+        </Section>
+      </AddProperties>
+      <Workflow name="Phase">
+        <Phase type="manual">In Dev</Phase>
+        <Phase type="automatic">Staged</Phase>
+        <Phase type="manual">Live</Phase>
+        <Phase type="automatic">Decommissioned</Phase>
+      </Workflow>
+    </Entity>
+
+    <Entity name="Database" title="Database" hasSearch="true">
+      <ListProperties>
+        <Property>Server</Property>
+        <Property>Instance</Property>
+        <Property>Product Name</Property>
+        <Property>Database Name</Property>
+        <Property>Data File Size</Property>
+        <Property>No Of Tables</Property>
+        <Property>No Of Views</Property>
+        <Property>No Of SPS</Property>
+        <Property>Location</Property>
+      </ListProperties>
+      <ListActions>
+        <Action linkTo="Database">Add Database</Action>
+      </ListActions>
+      <ListData>
+        <Data>
+          <Col>ATMSGP.NA.CORP</Col>
+          <Col>SHAREPOINT</Col>
+          <Col>Microsoft SQL Server 2000</Col>
+          <Col>master</Col>
+          <Col>12</Col>
+          <Col>178</Col>
+          <Col>3</Col>
+          <Col>12</Col>
+          <Col>AT</Col>
+        </Data>
+        <Data>
+          <Col>ATMSGP.NA.CORP</Col>
+          <Col>SHAREPOINT</Col>
+          <Col>SQL Server 2000</Col>
+          <Col>master</Col>
+          <Col>1</Col>
+          <Col>13</Col>
+          <Col>13</Col>
+          <Col>12</Col>
+          <Col>AT</Col>
+        </Data>
+        <Data>
+          <Col>ATMSGP.NA.CORP</Col>
+          <Col>SHAREPOINT</Col>
+          <Col>SQL Server 2000</Col>
+          <Col>master</Col>
+          <Col>11</Col>
+          <Col>17</Col>
+          <Col>1</Col>
+          <Col>12</Col>
+          <Col>AT</Col>
+        </Data>
+        <Data>
+          <Col>ATMWEP.NA.CORP</Col>
+          <Col>SHAREPOINT</Col>
+          <Col>Microsoft SQL Server 2000</Col>
+          <Col>master</Col>
+          <Col>12</Col>
+          <Col>128</Col>
+          <Col>3</Col>
+          <Col>22</Col>
+          <Col>ca</Col>
+        </Data>
+        <Data>
+          <Col>ATMWEP.NA.CORP</Col>
+          <Col>MSSQLSERVER</Col>
+          <Col>Microsoft SQL Server 2008</Col>
+          <Col>DATA</Col>
+          <Col>2</Col>
+          <Col>4</Col>
+          <Col>3</Col>
+          <Col>12</Col>
+          <Col>AX</Col>
+        </Data>
+        <Data>
+          <Col>ATESGP.NA.CORP</Col>
+          <Col>SHAREPOINT</Col>
+          <Col>Microsoft SQL Server 2000</Col>
+          <Col>master</Col>
+          <Col>12</Col>
+          <Col>13</Col>
+          <Col>3</Col>
+          <Col>12</Col>
+          <Col>AT</Col>
+        </Data>
+        <Data>
+          <Col>ATMSGP.NA.CORP</Col>
+          <Col>SHAREPOINT</Col>
+          <Col>Microsoft SQL Server 2000</Col>
+          <Col>master</Col>
+          <Col>12</Col>
+          <Col>178</Col>
+          <Col>3</Col>
+          <Col>12</Col>
+          <Col>AT</Col>
+        </Data>
+        <Data>
+          <Col>ATMSGP.NA.CORP</Col>
+          <Col>SHAREPOINT</Col>
+          <Col>Microsoft SQL Server 2000</Col>
+          <Col>master</Col>
+          <Col>12</Col>
+          <Col>178</Col>
+          <Col>3</Col>
+          <Col>12</Col>
+          <Col>AT</Col>
+        </Data>
+      </ListData>
+      <AddProperties>
+        <Section name="Details" zone="1">
+          <Field type="1" label="Server"></Field>
+          <Field type="1" label="Instance"></Field>
+          <Field type="1" label="Product Name"></Field>
+          <Field type="1" label="Database Name"></Field>
+          <Field type="4" label="Location"></Field>
+        </Section>
+        <Section name="Object Information" zone="2">
+          <Field type="1" label="Data file Size"></Field>
+          <Field type="4" label="No. of Tables"></Field>
+          <Field type="4" label="No. of Views"></Field>
+          <Field type="4" label="No. of Procs"></Field>
+        </Section>
+      </AddProperties>
+    </Entity>
+  </Entities>
+</App>
+
