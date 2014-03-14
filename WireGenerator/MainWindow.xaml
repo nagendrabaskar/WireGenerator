@@ -12,38 +12,57 @@
         <TabControl Height="438" Canvas.Left="19" Canvas.Top="69" Width="1152">
             <TabItem x:Name="Tab_Navigation" Header="Navigation">
                 <Canvas x:Name="Navigation" Background="#FFE5E5E5" Margin="-2,4,2,-4">
-                    <TreeView x:Name="NavigationTreeView" Height="367" Canvas.Left="12" Canvas.Top="17" Width="247"/>
-                    <Label Content="Menu Name" Height="30" Canvas.Left="431" Canvas.Top="50" Width="132"/>
-                    <TextBox x:Name="txtMenuName" Height="41" Canvas.Left="579" TextWrapping="Wrap" Canvas.Top="47" Width="173"/>
-                    <Label Content="Link to Entity" Height="30" Canvas.Left="432" Canvas.Top="99" Width="132"/>
-                    <TextBox x:Name="txtMenuLinkToEntity" Height="41" Canvas.Left="580" TextWrapping="Wrap" Canvas.Top="92" Width="174"/>
-                    <Button Content="Add Menu" Height="24" Canvas.Left="592" Canvas.Top="202" Width="82" Click="AddNav_Click"/>
-                    <Button x:Name="RemoveMenuButton" Content="Remove Selected" Height="24" Canvas.Left="464" Canvas.Top="200" Width="104" Click="RemoveMenuItem"/>
-                    <CheckBox x:Name="chkIsSubMenu" Content="Is Sub Menu Item" Height="21" Canvas.Left="581" Canvas.Top="154" Width="144"/>
+                    <TreeView x:Name="NavigationTreeView" Height="398" Canvas.Left="4" Canvas.Top="4" Width="248"/>
+                    <GroupBox Header="Navigation" HorizontalAlignment="Left" Height="121" VerticalAlignment="Top" Width="871" Canvas.Left="266" Canvas.Top="11">
+                        <Canvas Margin="7,0,0,1">
+                            <Label Content="Menu Name:" Height="30" Canvas.Left="26" Canvas.Top="-1" Width="83"/>
+                            <TextBox x:Name="txtMenuName" Height="26" Canvas.Left="110" TextWrapping="Wrap" Canvas.Top="2" Width="173"/>
+                            <Label Content="Link to Entity:" Height="30" Canvas.Left="354" Width="86"/>
+                            <TextBox x:Name="txtMenuLinkToEntity" Height="26" Canvas.Left="442" TextWrapping="Wrap" Canvas.Top="3" Width="174"/>
+                            <Button Content="Add Menu" Height="24" Canvas.Left="116" Canvas.Top="66" Width="82" Click="AddNav_Click"/>
+                            <Button x:Name="RemoveMenuButton" Content="Remove" Height="24" Canvas.Left="215" Canvas.Top="68" Width="104" Click="RemoveMenuItem"/>
+                            <CheckBox x:Name="chkIsSubMenu" Content="Is Sub Menu Item" Height="21" Canvas.Left="113" Canvas.Top="38" Width="144"/>
+                        </Canvas>
+                    </GroupBox>
                 </Canvas>
             </TabItem>
             <TabItem x:Name="Tab_Entities" Header="Entities">
                 <Grid x:Name="Entities" Background="#FFE5E5E5">
-                    <ListBox x:Name="lstEntities" HorizontalAlignment="Left" Height="390" Margin="7,9,0,0" VerticalAlignment="Top" Width="194"/>
+                    <ListBox x:Name="lstEntities" HorizontalAlignment="Left" Height="398" Margin="1,4,0,0" VerticalAlignment="Top" Width="207"/>
                     <Label Content="Name:" HorizontalAlignment="Left" Height="27" Margin="234,27,0,0" VerticalAlignment="Top" Width="56"/>
-                    <TextBox x:Name="txtEntityName" HorizontalAlignment="Left" Height="25" Margin="284,29,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="114"/>
-                    <Label Content="Title:" HorizontalAlignment="Left" Height="28" Margin="437,28,0,0" VerticalAlignment="Top" Width="56"/>
-                    <TextBox x:Name="txtEntityTitle" HorizontalAlignment="Left" Height="26" Margin="486,30,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="113"/>
-                    <Button Content="Add Entity" HorizontalAlignment="Left" Height="24" Margin="654,32,0,0" VerticalAlignment="Top" Width="88" Click="AddEntity_Click"/>
-                    <TabControl HorizontalAlignment="Left" Height="329" Margin="211,69,0,0" VerticalAlignment="Top" Width="927">
+                    <TextBox x:Name="txtEntityName" HorizontalAlignment="Left" Height="25" Margin="290,29,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="114"/>
+                    <Label Content="Title:" HorizontalAlignment="Left" Height="28" Margin="429,28,0,0" VerticalAlignment="Top" Width="56"/>
+                    <TextBox x:Name="txtEntityTitle" HorizontalAlignment="Left" Height="26" Margin="476,30,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="113"/>
+                    <Button Content="Add Entity" HorizontalAlignment="Left" Height="24" Margin="758,32,0,0" VerticalAlignment="Top" Width="88" Click="AddEntity_Click"/>
+                    <TabControl HorizontalAlignment="Left" Height="333" Margin="211,69,0,0" VerticalAlignment="Top" Width="927">
                         <TabItem x:Name="tabEntityListScreen" Header="List Screen">
-                            <Grid Background="#FFE5E5E5">
-                                <ListBox x:Name="lstListFields" HorizontalAlignment="Left" Height="288" Margin="6,5,0,0" VerticalAlignment="Top" Width="172"/>
-                                <Label Content="Field Name:" HorizontalAlignment="Left" Height="23" Margin="329,48,0,0" VerticalAlignment="Top" Width="97"/>
-                                <TextBox x:Name="txtListFieldName" HorizontalAlignment="Left" Height="24" Margin="423,50,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="100"/>
-                                <Button x:Name="btnAddListField" Content="Add Field" HorizontalAlignment="Left" Height="27" Margin="430,105,0,0" VerticalAlignment="Top" Width="93" Click="AddListField_Click"/>
-                                <Button x:Name="btnListFieldRemove" Content="Remove" HorizontalAlignment="Left" Height="26" Margin="332,106,0,0" VerticalAlignment="Top" Width="90" Click="ListFieldRemove_Click"/>
-                            </Grid>
+                            <Canvas x:Name="Field" Background="#FFE5E5E5" Margin="-2,1,-4,-4">
+                                <GroupBox Header="Fields" HorizontalAlignment="Left" Height="121" VerticalAlignment="Top" Width="908" Canvas.Left="4" Canvas.Top="5">
+                                    <Canvas Margin="7,0,0,1">
+                                        <ListBox x:Name="lstListFields" HorizontalAlignment="Left" Height="91" VerticalAlignment="Top" Width="180" Canvas.Left="-2" Canvas.Top="5"/>
+                                        <Label Content="Field Name:" HorizontalAlignment="Left" Height="24" VerticalAlignment="Top" Width="74" Canvas.Left="188" Canvas.Top="6"/>
+                                        <TextBox x:Name="txtListFieldName" HorizontalAlignment="Left" Height="24" TextWrapping="Wrap" VerticalAlignment="Top" Width="123" Canvas.Left="269" Canvas.Top="8"/>
+                                        <Button x:Name="btnAddListField" Content="Add" HorizontalAlignment="Left" Height="28" VerticalAlignment="Top" Width="93" Click="AddListField_Click" Canvas.Left="423" Canvas.Top="6"/>
+                                        <Button x:Name="btnListFieldRemove" Content="Remove" HorizontalAlignment="Left" Height="26" VerticalAlignment="Top" Width="90" Click="RemoveListField_Click" Canvas.Left="537" Canvas.Top="8"/>
+                                    </Canvas>
+                                </GroupBox>
+                                <GroupBox Header="Actions" HorizontalAlignment="Left" Height="108" VerticalAlignment="Top" Width="908" Canvas.Left="4" Canvas.Top="124">
+                                    <Canvas Margin="7,0,0,1">
+                                        <ListBox x:Name="lstListActions" HorizontalAlignment="Left" Height="82" VerticalAlignment="Top" Width="180" Canvas.Left="-2" Canvas.Top="3"/>
+                                        <Label Content="Action Name:" HorizontalAlignment="Left" Height="24" VerticalAlignment="Top" Width="74" Canvas.Left="188" Canvas.Top="4"/>
+                                        <TextBox x:Name="txtListActionName" HorizontalAlignment="Left" Height="24" TextWrapping="Wrap" VerticalAlignment="Top" Width="123" Canvas.Left="269" Canvas.Top="6"/>
+                                        <Button x:Name="btnAddListAction" Content="Add" HorizontalAlignment="Left" Height="28" VerticalAlignment="Top" Width="93" Click="AddListAction_Click" Canvas.Left="423" Canvas.Top="4"/>
+                                        <Button x:Name="btnListActionRemove" Content="Remove" HorizontalAlignment="Left" Height="26" VerticalAlignment="Top" Width="90" Click="RemoveListAction_Click" Canvas.Left="537" Canvas.Top="6"/>
+                                    </Canvas>
+                                </GroupBox>
+                                <GroupBox Header="" HorizontalAlignment="Left" Height="62" VerticalAlignment="Top" Width="908" Canvas.Left="4" Canvas.Top="236">
+                                    <CheckBox Content="List with row selection" HorizontalAlignment="Left" Height="22" Margin="22,7,0,0" VerticalAlignment="Top" Width="151"/>
+                                </GroupBox>
+                            </Canvas>
                         </TabItem>
                         <TabItem x:Name="tabEntityAdd" Header="Add Screen">
-                            <Grid Background="#FFE5E5E5">
-                                <TreeView x:Name="treeAddScreenSectionFields" HorizontalAlignment="Left" Height="285" Margin="6,8,0,0" VerticalAlignment="Top" Width="195"/>
-                                <GroupBox Header="Section" HorizontalAlignment="Left" Height="55" Margin="216,17,0,0" VerticalAlignment="Top" Width="687">
+                            <Grid Background="#FFE5E5E5" Margin="-2,0,-2,-3">
+                                <GroupBox Header="Section" HorizontalAlignment="Left" Height="72" Margin="204,0,0,0" VerticalAlignment="Top" Width="708">
                                     <Canvas Margin="7,0,0,1">
                                         <Label Content="Name:" Height="26" Canvas.Left="40" Width="59" Canvas.Top="2"/>
                                         <TextBox x:Name="txtSectionName" Height="26" Canvas.Left="94" TextWrapping="Wrap" Width="132" Canvas.Top="2"/>
@@ -52,27 +71,48 @@
                                         <ComboBox x:Name="cmbZone" Height="20" Canvas.Left="306" Canvas.Top="6" Width="92" Loaded="Zone_Loaded"/>
                                     </Canvas>
                                 </GroupBox>
-                                <GroupBox Header="Fields" HorizontalAlignment="Left" Height="81" Margin="216,79,0,0" VerticalAlignment="Top" Width="687">
-                                    <Canvas HorizontalAlignment="Left" Height="58" Margin="6,0,0,0" VerticalAlignment="Top" Width="667">
+                                <GroupBox Header="Fields" HorizontalAlignment="Left" Height="81" Margin="207,71,0,0" VerticalAlignment="Top" Width="703">
+                                    <Canvas HorizontalAlignment="Left" Height="58" Margin="6,-4,0,5" VerticalAlignment="Bottom" Width="667">
                                         <Label Content="Name:" Height="28" Canvas.Left="37" Canvas.Top="16" Width="65"/>
-                                        <TextBox x:Name="txtAddScreenFieldName" Height="24" Canvas.Left="105" TextWrapping="Wrap" Canvas.Top="17" Width="121"/>
-                                        <Label Content="Type:" Height="31" Canvas.Left="267" Canvas.Top="17" Width="54"/>
-                                        <ComboBox x:Name="cmbAddScreenFieldType" Height="19" Canvas.Left="314" Canvas.Top="19" Width="94" Loaded="FieldTypes_Loaded"/>
+                                        <TextBox x:Name="txtAddScreenFieldName" Height="24" Canvas.Left="93" TextWrapping="Wrap" Canvas.Top="17" Width="121"/>
+                                        <Label Content="Type:" Height="31" Canvas.Left="263" Canvas.Top="17" Width="54"/>
+                                        <ComboBox x:Name="cmbAddScreenFieldType" Height="19" Canvas.Left="308" Canvas.Top="19" Width="94" Loaded="FieldTypes_Loaded"/>
                                         <Button x:Name="btnAddScreenAddField" Content="Add" Height="26" Canvas.Left="474" Canvas.Top="16" Width="75" Click="AddScreenAddField_Click"/>
+                                        <Button x:Name="btnAddScreenRemove" Content="Remove" Height="23" Canvas.Left="571" Canvas.Top="19" Width="78" Click="AddScreenRemove_Click"/>
                                     </Canvas>
                                 </GroupBox>
-                                <Button x:Name="btnRemoveSection" Content="Remove" HorizontalAlignment="Left" Height="24" Margin="796,38,0,0" VerticalAlignment="Top" Width="82" Click="RemoveSection_Click"/>
+                                <Button x:Name="btnRemoveSection" Content="Remove" HorizontalAlignment="Left" Height="24" Margin="790,20,0,0" VerticalAlignment="Top" Width="82" Click="RemoveSection_Click"/>
+                                <TreeView x:Name="AddScreenSectionFieldsTreeView" HorizontalAlignment="Left" Height="291" Margin="4,5,0,0" VerticalAlignment="Top" Width="197"/>
                             </Grid>
                         </TabItem>
+                        <TabItem x:Name="tabEntityWorkflow" Header="Workflow">
+                            <Canvas x:Name="workflow" Background="#FFE5E5E5" Margin="-2,1,-4,-4">
+                                <GroupBox Header="" HorizontalAlignment="Left" Height="67" VerticalAlignment="Top" Width="908" Canvas.Left="4" Canvas.Top="5">
+                                    <Canvas Margin="7,0,0,1">
+                                        <Label Content="Phase Alias Name:" HorizontalAlignment="Left" Height="24" VerticalAlignment="Top" Width="106" Canvas.Left="14" Canvas.Top="6"/>
+                                        <TextBox x:Name="txtPhaseAliasName" HorizontalAlignment="Left" Height="24" TextWrapping="Wrap" VerticalAlignment="Top" Width="123" Canvas.Left="127" Canvas.Top="8"/>
+                                    </Canvas>
+                                </GroupBox>
+                                <GroupBox Header="Workflow" HorizontalAlignment="Left" Height="121" VerticalAlignment="Top" Width="908" Canvas.Left="4" Canvas.Top="69">
+                                    <Canvas Margin="7,0,0,1">
+                                        <ListBox x:Name="lstPhases" HorizontalAlignment="Left" Height="91" VerticalAlignment="Top" Width="180" Canvas.Left="-2" Canvas.Top="5"/>
+                                        <Label Content="Phase:" HorizontalAlignment="Left" Height="24" VerticalAlignment="Top" Width="48" Canvas.Left="214" Canvas.Top="6"/>
+                                        <TextBox x:Name="txtPhaseName" HorizontalAlignment="Left" Height="24" TextWrapping="Wrap" VerticalAlignment="Top" Width="123" Canvas.Left="269" Canvas.Top="8"/>
+                                        <Button x:Name="btnAddPhase" Content="Add" HorizontalAlignment="Left" Height="28" VerticalAlignment="Top" Width="93" Click="AddPhase_Click" Canvas.Left="423" Canvas.Top="6"/>
+                                        <Button x:Name="btnRemovePhase" Content="Remove" HorizontalAlignment="Left" Height="26" VerticalAlignment="Top" Width="90" Click="RemovePhase_Click" Canvas.Left="537" Canvas.Top="8"/>
+                                    </Canvas>
+                                </GroupBox>
+                            </Canvas>
+                        </TabItem>
                     </TabControl>
-                    <Button x:Name="btnRemoveEntity" Content="Remove Entity" HorizontalAlignment="Left" Height="23" Margin="760,33,0,0" VerticalAlignment="Top" Width="96" Click="RemoveEntity_Click"/>
+                    <Button x:Name="btnRemoveEntity" Content="Remove Entity" HorizontalAlignment="Left" Height="23" Margin="864,31,0,0" VerticalAlignment="Top" Width="96" Click="RemoveEntity_Click"/>
+                    <CheckBox x:Name="chkEntitySearch" Content="Search" HorizontalAlignment="Left" Height="21" Margin="627,33,0,0" VerticalAlignment="Top" Width="96" IsChecked="True"/>
 
                 </Grid>
             </TabItem>
         </TabControl>
-        <Button Content="Generate" Height="34" Canvas.Left="1042" Canvas.Top="546" Width="118" Click="GenerateOnClick"/>
-        <Button x:Name="SaveConfigButton" Content="Save Configuration" Height="30" Canvas.Left="876" Canvas.Top="551" Width="124" Click="SaveConfiguration_Click"/>
-        <Grid Height="100" Canvas.Left="783" Canvas.Top="-84" Width="100"/>
+        <Button Content="Generate" Height="28" Canvas.Left="1042" Canvas.Top="548" Width="118" Click="GenerateOnClick"/>
+        <Button x:Name="SaveConfigButton" Content="Save Configuration" Height="30" Canvas.Left="903" Canvas.Top="547" Width="124" Click="SaveConfiguration_Click"/>
 
     </Canvas>
 </Window>

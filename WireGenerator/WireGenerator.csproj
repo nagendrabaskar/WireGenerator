@@ -58,7 +58,6 @@
     <Compile Include="Model\Field.cs" />
     <Compile Include="Model\FieldOption.cs" />
     <Compile Include="Model\Section.cs" />
-    <Compile Include="Model\Workflow.cs" />
     <Compile Include="Model\WorkflowPhase.cs" />
     <Compile Include="Utility.cs" />
     <Page Include="MainWindow.xaml">
