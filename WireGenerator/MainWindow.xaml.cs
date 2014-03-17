@@ -1331,5 +1331,88 @@ namespace WireGenerator
         }
         #endregion
 
+        #region Entity_Select
+        private void Entity_Select(object sender, SelectionChangedEventArgs e)
+        {
+            //XElement entity = (((IEnumerable<XElement>)from el in appSchema.Elements("Entities").Elements("Entity").Where(a => a.Attribute("name").Value == lstEntities.SelectedItem.ToString()) select el).First());
+            var entity = appModel.Entities.Where(a => a.Name == lstEntities.SelectedItem.ToString()).First();
+            txtEntityName.Text = entity.Name;
+            txtEntityTitle.Text = entity.Title;
+            chkEntitySearch.IsChecked = false;
+            chkListWithSelector.IsChecked = false;
+
+            if (entity.HasSearch == true)
+                chkEntitySearch.IsChecked = true;
+
+            if (entity.ListScreenFields != null)
+                if (entity.IsListScreenWithSelector == true)
+                    chkListWithSelector.IsChecked = true;
+            if (entity.ListScreenFields.Count() > 0)
+                lstListFields.ItemsSource = entity.ListScreenFields.Select(f => f.FieldName).ToList();
+            if (entity.ListScreenActions.Count() > 0)
+                lstListActions.ItemsSource = entity.ListScreenActions.Select(a => a.ActionName).ToList();
+            if (entity.AddScreenSections.Count > 0)
+            {
+                TreeViewItem sectionTreeView;
+                foreach (var section in entity.AddScreenSections)
+                {
+                    sectionTreeView = new TreeViewItem();
+                    sectionTreeView.Header = section.SectionName;
+                    foreach (var field in section.Fields)
+                        sectionTreeView.Items.Add(field.FieldName);
+                    AddScreenSectionFieldsTreeView.Items.Add(sectionTreeView);
+                }
+            }
+        }
+        #endregion
+
+        #region chkListWithSelector_Click
+        private void chkListWithSelector_Click(object sender, RoutedEventArgs e)
+        {
+            if (lstEntities.SelectedItem != null)
+            {
+                var entity = appModel.Entities.Where(a => a.Name == lstEntities.SelectedItem.ToString()).First();
+                entity.IsListScreenWithSelector = false;
+                if (chkListWithSelector.IsChecked == true)
+                    entity.IsListScreenWithSelector = true;
+            }
+        }
+        #endregion
+
+        #region chkEntitySearch_Click
+        private void chkEntitySearch_Click(object sender, RoutedEventArgs e)
+        {
+            if (lstEntities.SelectedItem != null)
+            {
+                var entity = appModel.Entities.Where(a => a.Name == lstEntities.SelectedItem.ToString()).First();
+                entity.HasSearch = false;
+                if (chkEntitySearch.IsChecked == true)
+                    entity.HasSearch = true;
+            }
+        }
+        #endregion
+
+        #region lstListFields_SelectionChanged
+        private void lstListFields_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (lstEntities.SelectedItem != null)
+            {
+                var field = appModel.Entities.Where(a => a.Name == lstEntities.SelectedItem.ToString()).First().ListScreenFields.Where(f => f.FieldName == lstListFields.SelectedItem.ToString()).First();
+                txtListFieldName.Text = field.FieldName;
+            }
+        }
+        #endregion
+
+        #region lstListActions_SelectionChanged
+        private void lstListActions_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (lstEntities.SelectedItem != null)
+            {
+                var action = appModel.Entities.Where(a => a.Name == lstEntities.SelectedItem.ToString()).First().ListScreenActions.Where(f => f.ActionName == lstListActions.SelectedItem.ToString()).First();
+                txtListActionName.Text = action.ActionName;
+                txtListActionLinkTo.Text = action.LinkTo;
+            }
+        }
+        #endregion
     }
 }

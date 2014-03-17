@@ -28,7 +28,7 @@
             </TabItem>
             <TabItem x:Name="Tab_Entities" Header="Entities">
                 <Grid x:Name="Entities" Background="#FFE5E5E5">
-                    <ListBox x:Name="lstEntities" HorizontalAlignment="Left" Height="398" Margin="1,4,0,0" VerticalAlignment="Top" Width="207"/>
+                    <ListBox x:Name="lstEntities" HorizontalAlignment="Left" Height="398" Margin="1,4,0,0" VerticalAlignment="Top" Width="207" SelectionChanged="Entity_Select"/>
                     <Label Content="Name:" HorizontalAlignment="Left" Height="27" Margin="234,27,0,0" VerticalAlignment="Top" Width="56"/>
                     <TextBox x:Name="txtEntityName" HorizontalAlignment="Left" Height="25" Margin="290,29,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="114"/>
                     <Label Content="Title:" HorizontalAlignment="Left" Height="28" Margin="429,28,0,0" VerticalAlignment="Top" Width="56"/>
@@ -39,7 +39,7 @@
                             <Canvas x:Name="Field" Background="#FFE5E5E5" Margin="-2,1,-4,-4">
                                 <GroupBox Header="Fields" HorizontalAlignment="Left" Height="121" VerticalAlignment="Top" Width="908" Canvas.Left="4" Canvas.Top="5">
                                     <Canvas Margin="7,0,0,1">
-                                        <ListBox x:Name="lstListFields" HorizontalAlignment="Left" Height="91" VerticalAlignment="Top" Width="180" Canvas.Left="-2" Canvas.Top="5"/>
+                                        <ListBox x:Name="lstListFields" HorizontalAlignment="Left" Height="91" VerticalAlignment="Top" Width="180" Canvas.Left="-2" Canvas.Top="5" SelectionChanged="lstListFields_SelectionChanged"/>
                                         <Label Content="Field Name:" HorizontalAlignment="Left" Height="24" VerticalAlignment="Top" Width="74" Canvas.Left="188" Canvas.Top="6"/>
                                         <TextBox x:Name="txtListFieldName" HorizontalAlignment="Left" Height="24" TextWrapping="Wrap" VerticalAlignment="Top" Width="123" Canvas.Left="269" Canvas.Top="8"/>
                                         <Button x:Name="btnAddListField" Content="Add" HorizontalAlignment="Left" Height="28" VerticalAlignment="Top" Width="93" Click="AddListField_Click" Canvas.Left="423" Canvas.Top="6"/>
@@ -48,7 +48,7 @@
                                 </GroupBox>
                                 <GroupBox Header="Actions" HorizontalAlignment="Left" Height="108" VerticalAlignment="Top" Width="908" Canvas.Left="4" Canvas.Top="124">
                                     <Canvas Margin="7,0,0,1">
-                                        <ListBox x:Name="lstListActions" HorizontalAlignment="Left" Height="82" VerticalAlignment="Top" Width="180" Canvas.Left="-2" Canvas.Top="3"/>
+                                        <ListBox x:Name="lstListActions" HorizontalAlignment="Left" Height="82" VerticalAlignment="Top" Width="180" Canvas.Left="-2" Canvas.Top="3" SelectionChanged="lstListActions_SelectionChanged"/>
                                         <Label Content="Action Name:" HorizontalAlignment="Left" Height="24" VerticalAlignment="Top" Width="84" Canvas.Left="188" Canvas.Top="4"/>
                                         <TextBox x:Name="txtListActionName" HorizontalAlignment="Left" Height="24" TextWrapping="Wrap" VerticalAlignment="Top" Width="123" Canvas.Left="275" Canvas.Top="6"/>
                                         <Button x:Name="btnAddListAction" Content="Add" HorizontalAlignment="Left" Height="28" VerticalAlignment="Top" Width="93" Click="AddListAction_Click" Canvas.Left="429" Canvas.Top="4"/>
@@ -58,7 +58,7 @@
                                     </Canvas>
                                 </GroupBox>
                                 <GroupBox Header="" HorizontalAlignment="Left" Height="62" VerticalAlignment="Top" Width="908" Canvas.Left="4" Canvas.Top="236">
-                                    <CheckBox Content="List with row selection" HorizontalAlignment="Left" Height="22" Margin="22,7,0,0" VerticalAlignment="Top" Width="151"/>
+                                    <CheckBox x:Name="chkListWithSelector" Content="Show List records with selection checkbox" HorizontalAlignment="Left" Height="22" Margin="22,7,0,0" VerticalAlignment="Top" Width="248" Click="chkListWithSelector_Click"/>
                                 </GroupBox>
                             </Canvas>
                         </TabItem>
@@ -108,7 +108,7 @@
                         </TabItem>
                     </TabControl>
                     <Button x:Name="btnRemoveEntity" Content="Remove Entity" HorizontalAlignment="Left" Height="23" Margin="864,31,0,0" VerticalAlignment="Top" Width="96" Click="RemoveEntity_Click"/>
-                    <CheckBox x:Name="chkEntitySearch" Content="Search" HorizontalAlignment="Left" Height="21" Margin="627,33,0,0" VerticalAlignment="Top" Width="96" IsChecked="True"/>
+                    <CheckBox x:Name="chkEntitySearch" Content="Search" HorizontalAlignment="Left" Height="21" Margin="627,33,0,0" VerticalAlignment="Top" Width="96" IsChecked="True" Click="chkEntitySearch_Click"/>
 
                 </Grid>
             </TabItem>
