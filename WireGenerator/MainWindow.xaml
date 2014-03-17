@@ -49,10 +49,12 @@
                                 <GroupBox Header="Actions" HorizontalAlignment="Left" Height="108" VerticalAlignment="Top" Width="908" Canvas.Left="4" Canvas.Top="124">
                                     <Canvas Margin="7,0,0,1">
                                         <ListBox x:Name="lstListActions" HorizontalAlignment="Left" Height="82" VerticalAlignment="Top" Width="180" Canvas.Left="-2" Canvas.Top="3"/>
-                                        <Label Content="Action Name:" HorizontalAlignment="Left" Height="24" VerticalAlignment="Top" Width="74" Canvas.Left="188" Canvas.Top="4"/>
-                                        <TextBox x:Name="txtListActionName" HorizontalAlignment="Left" Height="24" TextWrapping="Wrap" VerticalAlignment="Top" Width="123" Canvas.Left="269" Canvas.Top="6"/>
-                                        <Button x:Name="btnAddListAction" Content="Add" HorizontalAlignment="Left" Height="28" VerticalAlignment="Top" Width="93" Click="AddListAction_Click" Canvas.Left="423" Canvas.Top="4"/>
-                                        <Button x:Name="btnListActionRemove" Content="Remove" HorizontalAlignment="Left" Height="26" VerticalAlignment="Top" Width="90" Click="RemoveListAction_Click" Canvas.Left="537" Canvas.Top="6"/>
+                                        <Label Content="Action Name:" HorizontalAlignment="Left" Height="24" VerticalAlignment="Top" Width="84" Canvas.Left="188" Canvas.Top="4"/>
+                                        <TextBox x:Name="txtListActionName" HorizontalAlignment="Left" Height="24" TextWrapping="Wrap" VerticalAlignment="Top" Width="123" Canvas.Left="275" Canvas.Top="6"/>
+                                        <Button x:Name="btnAddListAction" Content="Add" HorizontalAlignment="Left" Height="28" VerticalAlignment="Top" Width="93" Click="AddListAction_Click" Canvas.Left="429" Canvas.Top="4"/>
+                                        <Button x:Name="btnListActionRemove" Content="Remove" HorizontalAlignment="Left" Height="26" VerticalAlignment="Top" Width="90" Click="RemoveListAction_Click" Canvas.Left="543" Canvas.Top="6"/>
+                                        <Label Content="Link To Entity:" HorizontalAlignment="Left" Height="28" VerticalAlignment="Top" Width="84" Canvas.Left="188" Canvas.Top="44"/>
+                                        <TextBox x:Name="txtListActionLinkTo" HorizontalAlignment="Left" Height="24" TextWrapping="Wrap" VerticalAlignment="Top" Width="123" Canvas.Left="275" Canvas.Top="46"/>
                                     </Canvas>
                                 </GroupBox>
                                 <GroupBox Header="" HorizontalAlignment="Left" Height="62" VerticalAlignment="Top" Width="908" Canvas.Left="4" Canvas.Top="236">

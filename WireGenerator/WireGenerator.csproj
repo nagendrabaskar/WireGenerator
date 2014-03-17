@@ -113,12 +113,6 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="AppSchema.xml">
-      <SubType>Designer</SubType>
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
-  <ItemGroup>
     <Content Include="assets\Bootstrap\Bootstrap-datepicker.css" />
     <Content Include="assets\Bootstrap\Bootstrap-datepicker.js" />
     <Content Include="assets\Bootstrap\bootstrap-hover-dropdown.js" />
