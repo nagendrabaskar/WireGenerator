@@ -35,7 +35,8 @@ namespace WireGenerator
         private int counter;
         private bool lineItemModelSnippetAdded;
         private string destinationPath = "c:/WireFrames/";
-        private static string xmlFileName = "AppSchema.xml";
+        private string schemaAbsoluteFileName = string.Empty;
+        private string schemaName = string.Empty;
 
         enum FormControlTypes : int
         {
@@ -55,151 +56,38 @@ namespace WireGenerator
         }
         #endregion
 
+        #region MainWindow
         public MainWindow()
         {
             InitializeComponent();
-            
-            string executableLocation = System.IO.Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+
             appModel = new AppModel();
+            appModel.Entities = new List<Entity>();
             appModel.Navigation = new List<WireGenerator.Model.MenuItem>();
-            if (File.Exists(System.IO.Path.Combine(executableLocation, xmlFileName)))
+
+            List<string> schemaNames = new List<string>();
+            schemaNames.Add("New...");
+            
+            string assemblyPath = System.Reflection.Assembly.GetAssembly(typeof(MainWindow)).Location;
+            string assemblyFolderPath = System.IO.Path.GetDirectoryName(assemblyPath);
+            foreach (string file in Directory.GetFiles(assemblyFolderPath))
             {
-                appSchema = XElement.Load(System.IO.Path.Combine(executableLocation, xmlFileName));
-                #region load appModel from xml configuration
-                if (!appSchema.IsEmpty)
-                {
-                    this.App_Name.Text = appSchema.Element("Name").Value;
-                    this.App_UserName.Text = appSchema.Element("LoginUser").Value;
-
-                    //navigation
-                    var navigation = new XElement("Navigation");
-                    TreeViewItem node, subnode;
-                    WireGenerator.Model.MenuItem menuItem;
-                    IEnumerable<XElement> navMenuItems = from el in appSchema.Elements("Navigation").Elements("MenuItem") select el;
-                    if (navMenuItems.ToList().Count > 0)
-                    {
-                        foreach (XElement el in navMenuItems.ToList())
-                        {
-                            menuItem = new WireGenerator.Model.MenuItem();
-                            menuItem.Name = el.Attribute("name").Value;
-                            menuItem.LinkToUrl = (el.Attribute("linkTo") != null) ? el.Attribute("linkTo").Value : string.Empty;
-
-                            node = new TreeViewItem();
-                            node.Header = el.Attribute("name").Value;
-                            IEnumerable<XElement> menuSubItems = el.Descendants();
-                            menuItem.MenuSubItems = new List<MenuSubItem>();
-                            foreach (XElement subel in menuSubItems)
-                            {
-                                menuSubItem = new MenuSubItem();
-                                menuSubItem.SubItem = subel.Value;
-                                if (subel.HasAttributes)
-                                    menuSubItem.LinkToURL = subel.Attribute("linkTo").Value;
-
-                                menuItem.MenuSubItems.Add(menuSubItem);
-
-                                subnode = new TreeViewItem();
-                                subnode.Header = subel.Value;
-                                node.Items.Add(subnode);
-                            }
-                            NavigationTreeView.Items.Add(node);
-                            appModel.Navigation.Add(menuItem);
-                        }
-                    }
-
-                    //entities
-                    IEnumerable<XElement> xEntities = from el in appSchema.Elements("Entities").Elements("Entity") select el;
-                    if (xEntities.ToList().Count > 0)
-                    {
-                        Entity entity;
-                        Field field;
-                        WorkflowPhase phase;
-                        WireGenerator.Model.Action action;
-                        WireGenerator.Model.Section section;
-                        XElement xElement;
-                        XAttribute xListFieldsHasSelector;
-                        IEnumerable<XElement> xElements, xFields;
-                        IEnumerable<string> xListFields;
-
-                        appModel.Entities = new List<Entity>();
-                        foreach (XElement xEntity in xEntities.ToList())
-                        {
-                            entity = new Entity();
-                            entity.Name = xEntity.Attribute("name").Value;
-                            entity.Title = xEntity.Attribute("title").Value;
-                            entity.HasSearch = (xEntity.Attribute("hasSearch").Value == "true") ? true : false;
-
-                            //load list screen fields
-                            xListFieldsHasSelector = (from a in xEntity.Elements("ListFields").Attributes("WithSelector") select a).First();
-                            entity.IsListScreenWithSelector = Convert.ToBoolean(xListFieldsHasSelector.Value);
-                            
-                            xListFields = from a in xEntity.Elements("ListFields").Descendants() select a.Value;
-                            entity.ListScreenFields = new List<Field>();
-                            foreach (string xListField in xListFields.ToList())
-                            {
-                                field = new Field();
-                                field.FieldName = xListField;
-                                entity.ListScreenFields.Add(field);
-                            }
-
-                            //load list screen actions
-                            xElements = from a in xEntity.Elements("ListActions").Descendants() select a;
-                            entity.ListScreenActions = new List<WireGenerator.Model.Action>();
-                            foreach (XElement xListAction in xElements)
-                            {
-                                action = new WireGenerator.Model.Action();
-                                action.ActionName = xListAction.Value;
-                                action.LinkTo = xListAction.Attribute("linkTo").Value;
-                                entity.ListScreenActions.Add(action);
-                            }
-
-                            //load add screen sections and fields
-                            xElements = from a in xEntity.Elements("AddFields").Elements("Section") select a;
-                            entity.AddScreenSections = new List<WireGenerator.Model.Section>();
-                            foreach (XElement xSection in xElements)
-                            {
-                                section = new Model.Section();
-                                section.SectionName = xSection.Attribute("name").Value;
-                                section.Zone = xSection.Attribute("zone").Value;
-
-                                xFields = from a in xSection.Descendants() select a;
-                                section.Fields = new List <Field>();
-                                foreach (XElement xfield in xFields)
-                                {
-                                    field = new Model.Field();
-                                    field.FieldName = xfield.Attribute("label").Value;
-                                    field.Type = Convert.ToInt32(xfield.Attribute("type").Value);
-                                    section.Fields.Add(field);
-                                }
-                                entity.AddScreenSections.Add(section);
-                            }
-
-                            //load workflow
-                            xElement = (from a in xEntity.Elements("Workflow") select a).FirstOrDefault();
-                            if (xElement != null)
-                            {
-                                xElements = from a in xEntity.Elements("Workflow").Descendants() select a;
-                                entity.Workflow = new List<WorkflowPhase>();
-                                foreach (XElement xPhase in xElements)
-                                {
-                                    phase = new WorkflowPhase();
-                                    phase.PhaseName = xPhase.Value;
-                                    entity.Workflow.Add(phase);
-                                }
-                            }
-                            appModel.Entities.Add(entity);
-                            lstEntities.Items.Add(entity.Name);
-                        }
-                    }
-                #endregion
-                }
+                string fileName = System.IO.Path.GetFileName(file);
+                if (file.Contains("_appschema.xml"))
+                    schemaNames.Add(fileName.Substring(0, fileName.Length - 14));
             }
+
+            cmbSchemaNames.ItemsSource = schemaNames;
+            cmbSchemaNames.SelectedIndex = 0;
+
         }
+        #endregion
 
         #region GenerateOnClick(object sender, RoutedEventArgs e)
         private void GenerateOnClick(object sender, RoutedEventArgs e)
         {
             //load app schema file
-            appSchema = XElement.Load(xmlFileName);
+            appSchema = XElement.Load(schemaAbsoluteFileName);
 
             if (!appSchema.IsEmpty)
             {
@@ -715,11 +603,11 @@ namespace WireGenerator
                         controlSnippet = controlSnippet.Append("<div class=\"row\">");
                         controlSnippet = controlSnippet.Append("<div class=\"col-md-12\">");
                         controlSnippet = controlSnippet.Append("<div class=\"btn-group\">");
-                        foreach (var option in options)
-                        {
-                            id = option.Replace(" ", string.Empty);
-                            controlSnippet = controlSnippet.Append("<a class=\"btn btn-sm btn-default\" id=\"" + id + "Btn\" href=\"javascript:SwitchCheckBoxButton('" + id + "');\"><i id=\"" + id + "Text\" class=\"fa fa-lg valign fa-check-square-o\"></i>&nbsp;" + option + "</a>");
-                        }
+                        //foreach (var option in options)
+                        //{
+                        //    id = option.Replace(" ", string.Empty);
+                        //    controlSnippet = controlSnippet.Append("<a class=\"btn btn-sm btn-default\" id=\"" + id + "Btn\" href=\"javascript:SwitchCheckBoxButton('" + id + "');\"><i id=\"" + id + "Text\" class=\"fa fa-lg valign fa-check-square-o\"></i>&nbsp;" + option + "</a>");
+                        //}
                         controlSnippet = controlSnippet.Append("</div>");
                         controlSnippet = controlSnippet.Append("</div>");
                         controlSnippet = controlSnippet.Append("</div>");
@@ -782,134 +670,150 @@ namespace WireGenerator
         #region void SaveConfiguration_Click
         private void SaveConfiguration_Click(object sender, System.Windows.RoutedEventArgs e)
         {
-            //root and application properties
-            var root = new XElement("App");
-            root.Add(new XElement("Name", this.App_Name.Text));
-            root.Add(new XElement("LoginUser", this.App_UserName.Text));
 
-
-            if (appModel != null)
+            if (cmbSchemaNames.SelectedIndex == 0 && txtSchemaName.Text == "Enter Schema Name")
             {
-                //navigation
-                if (appModel.Navigation != null)
-                {
-                    var navigation = new XElement("Navigation");
-                    XElement menu, submenu;
-                    foreach (var menuItem in appModel.Navigation)
-                    {
-                        menu = new XElement("MenuItem");
-                        menu.SetAttributeValue("name", menuItem.Name);
-                        menu.SetAttributeValue("linkTo", menuItem.LinkToUrl);
+                schemaName = string.Empty;
+                MessageBox.Show("Enter Schema Name to save the Configuration.");
+                txtSchemaName.Focus();
+            }
+            else if (cmbSchemaNames.SelectedIndex == 0 && txtSchemaName.Text != "Enter Schema Name")
+            {
+                schemaName = txtSchemaName.Text.Trim();
+            }
 
-                        if (menuItem.MenuSubItems != null)
+            if (schemaName != string.Empty )
+            {
+                //root and application properties
+                var root = new XElement("App");
+                root.Add(new XElement("Name", this.App_Name.Text));
+                root.Add(new XElement("LoginUser", this.App_UserName.Text));
+
+
+                if (appModel != null)
+                {
+                    //navigation
+                    if (appModel.Navigation.Count > 0)
+                    {
+                        var navigation = new XElement("Navigation");
+                        XElement menu, submenu;
+                        foreach (var menuItem in appModel.Navigation)
                         {
-                            foreach (var submenuItem in menuItem.MenuSubItems)
+                            menu = new XElement("MenuItem");
+                            menu.SetAttributeValue("name", menuItem.Name);
+                            menu.SetAttributeValue("linkTo", menuItem.LinkToUrl);
+
+                            if (menuItem.MenuSubItems != null)
                             {
-                                submenu = new XElement("SubMenuItem");
-                                submenu.Value = submenuItem.SubItem;
-                                submenu.SetAttributeValue("linkTo", submenuItem.LinkToURL);
-                                menu.Add(submenu);
+                                foreach (var submenuItem in menuItem.MenuSubItems)
+                                {
+                                    submenu = new XElement("SubMenuItem");
+                                    submenu.Value = submenuItem.SubItem;
+                                    submenu.SetAttributeValue("linkTo", submenuItem.LinkToURL);
+                                    menu.Add(submenu);
+                                }
                             }
+                            navigation.Add(menu);
                         }
-                        navigation.Add(menu);
+                        root.Add(navigation);
                     }
-                    root.Add(navigation);
-                }
 
-                //entities
-                if (appModel.Entities.Count > 0)
-                {
-                    var xEntities = new XElement("Entities");
-                    XElement xEntity, xListFields, xListActions, xAddFields, xSection, xWorkflow, xElement;
-                    foreach (var entity in appModel.Entities)
+                    //entities
+                    if (appModel.Entities.Count > 0)
                     {
-                        xEntity = new XElement("Entity");
-                        xEntity.SetAttributeValue("name", entity.Name);
-                        xEntity.SetAttributeValue("title", entity.Title);
-                        xEntity.SetAttributeValue("hasSearch", entity.HasSearch);
+                        var xEntities = new XElement("Entities");
+                        XElement xEntity, xListFields, xListActions, xAddFields, xSection, xWorkflow, xElement;
+                        foreach (var entity in appModel.Entities)
+                        {
+                            xEntity = new XElement("Entity");
+                            xEntity.SetAttributeValue("name", entity.Name);
+                            xEntity.SetAttributeValue("title", entity.Title);
+                            xEntity.SetAttributeValue("hasSearch", entity.HasSearch);
 
-                        //ListFields
-                        if (entity.ListScreenFields != null)
-                        {
-                            if (entity.ListScreenFields.Count > 0)
+                            //ListFields
+                            if (entity.ListScreenFields != null)
                             {
-                                xListFields = new XElement("ListFields");
-                                xListFields.SetAttributeValue("WithSelector", entity.IsListScreenWithSelector);
-                                foreach (var listField in entity.ListScreenFields)
+                                if (entity.ListScreenFields.Count > 0)
                                 {
-                                    xElement = new XElement("Field");
-                                    xElement.Value = listField.FieldName;
-                                    xListFields.Add(xElement);
-                                }
-                                xEntity.Add(xListFields);
-                            }
-                        }
-                        //ListActions
-                        if (entity.ListScreenActions != null)
-                        {
-                            if (entity.ListScreenActions.Count > 0)
-                            {
-                                xListActions = new XElement("ListActions");
-                                foreach (var listAction in entity.ListScreenActions)
-                                {
-                                    xElement = new XElement("Action");
-                                    xElement.Value = listAction.ActionName;
-                                    xElement.SetAttributeValue("linkTo", listAction.LinkTo);
-                                    xListActions.Add(xElement);
-                                }
-                                xEntity.Add(xListActions);
-                            }
-                        }
-                        //AddFields
-                        if (entity.AddScreenSections != null)
-                        {
-                            if (entity.AddScreenSections.Count > 0)
-                            {
-                                xAddFields = new XElement("AddFields");
-                                foreach (var section in entity.AddScreenSections)
-                                {
-                                    xSection = new XElement("Section");
-                                    xSection.SetAttributeValue("name", section.SectionName);
-                                    xSection.SetAttributeValue("zone", section.Zone);
-
-                                    foreach (var field in section.Fields)
+                                    xListFields = new XElement("ListFields");
+                                    xListFields.SetAttributeValue("WithSelector", entity.IsListScreenWithSelector);
+                                    foreach (var listField in entity.ListScreenFields)
                                     {
                                         xElement = new XElement("Field");
-                                        xElement.SetAttributeValue("type", field.Type + 1);
-                                        xElement.SetAttributeValue("label", field.FieldName);
-                                        xSection.Add(xElement);
+                                        xElement.Value = listField.FieldName;
+                                        xListFields.Add(xElement);
                                     }
-                                    xAddFields.Add(xSection);
+                                    xEntity.Add(xListFields);
                                 }
-                                xEntity.Add(xAddFields);
                             }
-                        }
-
-                        //workflow
-                        if (entity.Workflow != null)
-                        {
-                            if (entity.Workflow.Count() > 0)
+                            //ListActions
+                            if (entity.ListScreenActions != null)
                             {
-                                xWorkflow = new XElement("Workflow");
-                                xWorkflow.SetAttributeValue("name", entity.WorkflowAliasName);
-                                foreach (var phase in entity.Workflow)
+                                if (entity.ListScreenActions.Count > 0)
                                 {
-                                    xElement = new XElement("Phase");
-                                    xElement.Value = phase.PhaseName;
-                                    xWorkflow.Add(xElement);
+                                    xListActions = new XElement("ListActions");
+                                    foreach (var listAction in entity.ListScreenActions)
+                                    {
+                                        xElement = new XElement("Action");
+                                        xElement.Value = listAction.ActionName;
+                                        xElement.SetAttributeValue("linkTo", listAction.LinkTo);
+                                        xListActions.Add(xElement);
+                                    }
+                                    xEntity.Add(xListActions);
                                 }
-                                xEntity.Add(xWorkflow);
                             }
-                        }
-                        xEntities.Add(xEntity);
-                    }
-                    root.Add(xEntities);
-                }
+                            //AddFields
+                            if (entity.AddScreenSections != null)
+                            {
+                                if (entity.AddScreenSections.Count > 0)
+                                {
+                                    xAddFields = new XElement("AddFields");
+                                    foreach (var section in entity.AddScreenSections)
+                                    {
+                                        xSection = new XElement("Section");
+                                        xSection.SetAttributeValue("name", section.SectionName);
+                                        xSection.SetAttributeValue("zone", section.Zone);
 
+                                        foreach (var field in section.Fields)
+                                        {
+                                            xElement = new XElement("Field");
+                                            xElement.SetAttributeValue("type", field.Type + 1);
+                                            xElement.SetAttributeValue("label", field.FieldName);
+                                            xSection.Add(xElement);
+                                        }
+                                        xAddFields.Add(xSection);
+                                    }
+                                    xEntity.Add(xAddFields);
+                                }
+                            }
+
+                            //workflow
+                            if (entity.Workflow != null)
+                            {
+                                if (entity.Workflow.Count() > 0)
+                                {
+                                    entity.WorkflowAliasName = string.IsNullOrEmpty(txtPhaseAliasName.Text) ? "Phase" : txtPhaseAliasName.Text;
+                                    xWorkflow = new XElement("Workflow");
+                                    xWorkflow.SetAttributeValue("name", entity.WorkflowAliasName);
+                                    foreach (var phase in entity.Workflow)
+                                    {
+                                        xElement = new XElement("Phase");
+                                        xElement.Value = phase.PhaseName;
+                                        xWorkflow.Add(xElement);
+                                    }
+                                    xEntity.Add(xWorkflow);
+                                }
+                            }
+                            xEntities.Add(xEntity);
+                        }
+                        root.Add(xEntities);
+                    }
+
+                }
+                //save xml
+                root.Save(schemaName+"_appschema.xml");
+                MessageBox.Show(schemaName + " Configuration saved successfully!");
             }
-            //save xml
-            root.Save("AppSchema.xml");
-            MessageBox.Show("done!");
         }
         #endregion
 
@@ -919,7 +823,8 @@ namespace WireGenerator
             var treeNode = new TreeViewItem();
             WireGenerator.Model.MenuItem menuItem;
             bool isValid = true;
-            if (!chkIsSubMenu.IsChecked == true)
+
+            if (chkIsSubMenu.IsChecked == false)
             {
                 //for Menu items
                 treeNode.Header = txtMenuName.Text.Trim();
@@ -937,31 +842,43 @@ namespace WireGenerator
             {
                 //for Sub Menu items
                 var selectedNode = NavigationTreeView.SelectedItem as TreeViewItem;
-                if (selectedNode == null)
+                var parentNode = selectedNode.Parent as TreeViewItem;
+                if (parentNode == null)
                 {
-                    MessageBox.Show("Select Menu Item");
-                    isValid = false;
-                }
-
-                if (isValid)
-                {
-                    treeNode.Header = txtMenuName.Text;
-                    selectedNode.Items.Add(treeNode);
-
-                    menuItem = appModel.Navigation.Where(a => a.Name.Equals(selectedNode.Header.ToString())).First();
-
-                    if (menuItem.MenuSubItems == null)
+                    if (selectedNode == null)
                     {
-                        menuItem.MenuSubItems = new List<MenuSubItem>();
+                        MessageBox.Show("Select Menu Item");
+                        isValid = false;
                     }
-                    MenuSubItem menuSubItem = new MenuSubItem();
-                    menuSubItem.SubItem = txtMenuName.Text;
-                    if (!string.IsNullOrEmpty(txtMenuLinkToEntity.Text))
-                        menuSubItem.LinkToURL = txtMenuLinkToEntity.Text;
-                    menuItem.MenuSubItems.Add(menuSubItem);
 
-                    txtMenuName.Clear();
-                    txtMenuLinkToEntity.Clear();
+                    if (isValid)
+                    {
+                        treeNode.Header = txtMenuName.Text;
+                        
+
+                        menuItem = appModel.Navigation.Where(a => a.Name.Equals(selectedNode.Header.ToString())).First();
+
+                        if (menuItem.MenuSubItems == null)
+                        {
+                            menuItem.MenuSubItems = new List<MenuSubItem>();
+                        }
+                        MenuSubItem menuSubItem = new MenuSubItem();
+                        menuSubItem.SubItem = txtMenuName.Text;
+                        if (!string.IsNullOrEmpty(txtMenuLinkToEntity.Text))
+                        {
+                            selectedNode.Items.Add(treeNode.Header + " (" + txtMenuLinkToEntity.Text + ")");
+                            menuSubItem.LinkToURL = txtMenuLinkToEntity.Text;
+                        }
+                        else
+                        {
+                            selectedNode.Items.Add(treeNode);
+                        }
+
+                        menuItem.MenuSubItems.Add(menuSubItem);
+
+                        txtMenuName.Clear();
+                        txtMenuLinkToEntity.Clear();
+                    }
                 }
             }
 
@@ -975,6 +892,9 @@ namespace WireGenerator
             {
                 var selectedNode = NavigationTreeView.SelectedItem as TreeViewItem;
                 var parentNode = selectedNode.Parent as TreeViewItem;
+                string selectedString;
+
+
 
                 if (parentNode == null)
                 {
@@ -984,8 +904,14 @@ namespace WireGenerator
                 }
                 else
                 {
+                    if (selectedNode.Header.ToString().Contains("("))
+                        selectedString = (selectedNode.Header.ToString()).Substring(0, (selectedNode.Header.ToString().IndexOf("(")) - 1);
+                    else
+                        selectedString = selectedNode.Header.ToString();
+
                     var menu = appModel.Navigation.Where(a => a.Name == parentNode.Header.ToString()).First();
-                    var subMenu = menu.MenuSubItems.Where(a => a.SubItem == ((TreeViewItem)NavigationTreeView.SelectedItem).Header.ToString()).First();
+                    //var subMenu = menu.MenuSubItems.Where(a => a.SubItem == ((TreeViewItem)NavigationTreeView.SelectedItem).Header.ToString()).First();
+                    var subMenu = menu.MenuSubItems.Where(a => a.SubItem == selectedString).First();
                     menu.MenuSubItems.Remove(subMenu);
                     parentNode.Items.RemoveAt(parentNode.Items.IndexOf(NavigationTreeView.SelectedItem));
                 }
@@ -1008,7 +934,13 @@ namespace WireGenerator
                 Entity entity = new Entity();
                 entity.Name = txtEntityName.Text;
                 entity.Title = txtEntityTitle.Text;
-                appModel.Entities = new List<Entity>();
+                if (appModel.Entities == null)
+                {
+                    appModel.Entities = new List<Entity>();
+                }
+                entity.ListScreenFields = new List<Field>();
+                entity.ListScreenActions = new List<WireGenerator.Model.Action>();
+                entity.Workflow = new List<WorkflowPhase>();
                 appModel.Entities.Add(entity);
 
                 txtEntityName.Clear();
@@ -1055,8 +987,7 @@ namespace WireGenerator
                         entity.ListScreenFields = new List<Field>();
 
                     entity.ListScreenFields.Add(field);
-                    this.lstListFields.Items.Add(field.FieldName);
-
+                    lstListFields.ItemsSource = entity.ListScreenFields.Select(a => a.FieldName).ToList();
                     txtListFieldName.Clear();
                 }
             }
@@ -1071,7 +1002,7 @@ namespace WireGenerator
                 var entity = appModel.Entities.Where(a => a.Name.Equals(lstEntities.SelectedItem.ToString())).First();
                 var field = entity.ListScreenFields.Where(f => f.FieldName == lstListFields.SelectedItem.ToString()).First();
                 entity.ListScreenFields.Remove(field);
-                lstListFields.Items.RemoveAt(lstListFields.Items.IndexOf(lstListFields.SelectedItem));
+                lstListFields.ItemsSource = entity.ListScreenFields.Select(a => a.FieldName).ToList();
             }
         }
         #endregion
@@ -1104,8 +1035,7 @@ namespace WireGenerator
                         entity.ListScreenActions = new List<WireGenerator.Model.Action>();
 
                     entity.ListScreenActions.Add(action);
-                    this.lstListActions.Items.Add(action.ActionName);
-
+                    lstListActions.ItemsSource = entity.ListScreenActions.Select(a => a.ActionName).ToList();
                     txtListActionName.Clear();
                 }
             }
@@ -1120,7 +1050,7 @@ namespace WireGenerator
                 var entity = appModel.Entities.Where(a => a.Name.Equals(lstEntities.SelectedItem.ToString())).First();
                 var action = entity.ListScreenActions.Where(f => f.ActionName == lstListActions.SelectedItem.ToString()).First();
                 entity.ListScreenActions.Remove(action);
-                lstListActions.Items.RemoveAt(lstListActions.Items.IndexOf(lstListActions.SelectedItem));
+                lstListActions.ItemsSource = entity.ListScreenActions.Select(a => a.ActionName).ToList();
             }
         }
         #endregion
@@ -1316,7 +1246,7 @@ namespace WireGenerator
                         entity.Workflow = new List<WorkflowPhase>();
 
                     entity.Workflow.Add(phase);
-                    this.lstPhases.Items.Add(phase.PhaseName);
+                    lstPhases.ItemsSource = entity.Workflow.Select(w => w.PhaseName).ToList();
                     txtPhaseName.Clear();
                 }
             }
@@ -1327,14 +1257,18 @@ namespace WireGenerator
         private void RemovePhase_Click(object sender, System.Windows.RoutedEventArgs e)
         {
             if (lstPhases.SelectedItem != null)
-                lstPhases.Items.RemoveAt(lstPhases.Items.IndexOf(lstPhases.SelectedItem));
+            {
+                var entity = appModel.Entities.Where(a => a.Name.Equals(lstEntities.SelectedItem.ToString())).First();
+                var phase = entity.Workflow.Where(a => a.PhaseName == lstPhases.SelectedItem).First();
+                entity.Workflow.Remove(phase);
+                lstPhases.ItemsSource = entity.Workflow.Select(s => s.PhaseName).ToList();
+            }
         }
         #endregion
 
         #region Entity_Select
         private void Entity_Select(object sender, SelectionChangedEventArgs e)
         {
-            //XElement entity = (((IEnumerable<XElement>)from el in appSchema.Elements("Entities").Elements("Entity").Where(a => a.Attribute("name").Value == lstEntities.SelectedItem.ToString()) select el).First());
             var entity = appModel.Entities.Where(a => a.Name == lstEntities.SelectedItem.ToString()).First();
             txtEntityName.Text = entity.Name;
             txtEntityTitle.Text = entity.Title;
@@ -1347,22 +1281,32 @@ namespace WireGenerator
             if (entity.ListScreenFields != null)
                 if (entity.IsListScreenWithSelector == true)
                     chkListWithSelector.IsChecked = true;
-            if (entity.ListScreenFields.Count() > 0)
-                lstListFields.ItemsSource = entity.ListScreenFields.Select(f => f.FieldName).ToList();
-            if (entity.ListScreenActions.Count() > 0)
-                lstListActions.ItemsSource = entity.ListScreenActions.Select(a => a.ActionName).ToList();
-            if (entity.AddScreenSections.Count > 0)
+            lstListFields.ItemsSource = entity.ListScreenFields.Select(f => f.FieldName).ToList();
+            lstListActions.ItemsSource = entity.ListScreenActions.Select(a => a.ActionName).ToList();
+            AddScreenSectionFieldsTreeView.Items.Clear();
+            if (entity.AddScreenSections != null)
             {
-                TreeViewItem sectionTreeView;
-                foreach (var section in entity.AddScreenSections)
+                if (entity.AddScreenSections.Count > 0)
                 {
-                    sectionTreeView = new TreeViewItem();
-                    sectionTreeView.Header = section.SectionName;
-                    foreach (var field in section.Fields)
-                        sectionTreeView.Items.Add(field.FieldName);
-                    AddScreenSectionFieldsTreeView.Items.Add(sectionTreeView);
+                    AddScreenSectionFieldsTreeView.Items.Clear();
+                    TreeViewItem sectionTreeView, treeNode;
+                    foreach (var section in entity.AddScreenSections)
+                    {
+                        sectionTreeView = new TreeViewItem();
+                        sectionTreeView.Header = section.SectionName;
+                        foreach (var field in section.Fields)
+                        {
+                            treeNode = new TreeViewItem();
+                            treeNode.Header = field.FieldName;
+                            sectionTreeView.Items.Add(treeNode);
+                        }
+                        AddScreenSectionFieldsTreeView.Items.Add(sectionTreeView);
+                    }
                 }
             }
+            lstPhases.ItemsSource = entity.Workflow.Select(w => w.PhaseName).ToList();
+            if (!string.IsNullOrEmpty(entity.WorkflowAliasName))
+                txtPhaseAliasName.Text = entity.WorkflowAliasName;
         }
         #endregion
 
@@ -1395,23 +1339,214 @@ namespace WireGenerator
         #region lstListFields_SelectionChanged
         private void lstListFields_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (lstEntities.SelectedItem != null)
-            {
-                var field = appModel.Entities.Where(a => a.Name == lstEntities.SelectedItem.ToString()).First().ListScreenFields.Where(f => f.FieldName == lstListFields.SelectedItem.ToString()).First();
-                txtListFieldName.Text = field.FieldName;
-            }
+            //if (lstEntities.SelectedItem != null)
+            //{
+            //    var field = appModel.Entities.Where(a => a.Name == lstEntities.SelectedItem.ToString()).First().ListScreenFields.Where(f => f.FieldName == lstListFields.SelectedItem.ToString()).First();
+            //    txtListFieldName.Text = field.FieldName;
+            //}
         }
         #endregion
 
         #region lstListActions_SelectionChanged
         private void lstListActions_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (lstEntities.SelectedItem != null)
+            //if (lstEntities.SelectedItem != null)
+            //{
+            //    var action = appModel.Entities.Where(a => a.Name == lstEntities.SelectedItem.ToString()).First().ListScreenActions.Where(f => f.ActionName == lstListActions.SelectedItem.ToString()).First();
+            //    txtListActionName.Text = action.ActionName;
+            //    txtListActionLinkTo.Text = action.LinkTo;
+            //}
+        }
+        #endregion
+
+        #region cmbSchemaNames_SelectionChanged
+        private void cmbSchemaNames_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (cmbSchemaNames.SelectedIndex == 0)
             {
-                var action = appModel.Entities.Where(a => a.Name == lstEntities.SelectedItem.ToString()).First().ListScreenActions.Where(f => f.ActionName == lstListActions.SelectedItem.ToString()).First();
-                txtListActionName.Text = action.ActionName;
-                txtListActionLinkTo.Text = action.LinkTo;
+                txtSchemaName.Text = "Enter Schema Name";
+                txtSchemaName.Visibility = System.Windows.Visibility.Visible;
             }
+            else
+                txtSchemaName.Visibility = System.Windows.Visibility.Hidden;
+
+            if (cmbSchemaNames.SelectedIndex > 0)
+            {
+                string executableLocation = System.IO.Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+                appModel = new AppModel();
+                appModel.Navigation = new List<WireGenerator.Model.MenuItem>();
+                schemaName = cmbSchemaNames.SelectedItem.ToString();
+                schemaAbsoluteFileName = System.IO.Path.Combine(executableLocation, cmbSchemaNames.SelectedItem.ToString() + "_appschema.xml");
+                if (File.Exists(schemaAbsoluteFileName))
+                {
+                    appSchema = XElement.Load(schemaAbsoluteFileName);
+                    #region load appModel from xml configuration
+                    if (!appSchema.IsEmpty)
+                    {
+                        this.App_Name.Text = appSchema.Element("Name").Value;
+                        this.App_UserName.Text = appSchema.Element("LoginUser").Value;
+
+                        //navigation
+                        var navigation = new XElement("Navigation");
+                        TreeViewItem node, subnode;
+                        WireGenerator.Model.MenuItem menuItem;
+                        IEnumerable<XElement> navMenuItems = from el in appSchema.Elements("Navigation").Elements("MenuItem") select el;
+                        if (navMenuItems.ToList().Count > 0)
+                        {
+                            foreach (XElement el in navMenuItems.ToList())
+                            {
+                                menuItem = new WireGenerator.Model.MenuItem();
+                                menuItem.Name = el.Attribute("name").Value;
+                                menuItem.LinkToUrl = (el.Attribute("linkTo") != null) ? el.Attribute("linkTo").Value : string.Empty;
+
+                                node = new TreeViewItem();
+                                if (string.IsNullOrEmpty(menuItem.LinkToUrl))
+                                    node.Header = el.Attribute("name").Value;
+                                else
+                                    node.Header = el.Attribute("name").Value + "(" + menuItem.LinkToUrl + ")";
+                                IEnumerable<XElement> menuSubItems = el.Descendants();
+                                menuItem.MenuSubItems = new List<MenuSubItem>();
+                                foreach (XElement subel in menuSubItems)
+                                {
+                                    menuSubItem = new MenuSubItem();
+                                    menuSubItem.SubItem = subel.Value;
+                                    menuSubItem.LinkToURL = (subel.Attribute("linkTo") != null) ? subel.Attribute("linkTo").Value : string.Empty;
+                                    menuItem.MenuSubItems.Add(menuSubItem);
+
+                                    subnode = new TreeViewItem();
+                                    if (string.IsNullOrEmpty(menuSubItem.LinkToURL))
+                                        subnode.Header = subel.Value;
+                                    else
+                                        if (menuSubItem.LinkToURL.Contains("_"))
+                                            subnode.Header = subel.Value + " (" + (menuSubItem.LinkToURL).Substring(0, menuSubItem.LinkToURL.IndexOf("_")) + ")";
+                                        else
+                                            subnode.Header = subel.Value + " (" + (menuSubItem.LinkToURL) + ")";
+
+                                    node.Items.Add(subnode);
+                                }
+                                NavigationTreeView.Items.Add(node);
+                                appModel.Navigation.Add(menuItem);
+                            }
+                        }
+
+                        //entities
+                        IEnumerable<XElement> xEntities = from el in appSchema.Elements("Entities").Elements("Entity") select el;
+                        appModel.Entities = new List<Entity>();
+                        if (xEntities.ToList().Count > 0)
+                        {
+                            Entity entity;
+                            Field field;
+                            WorkflowPhase phase;
+                            WireGenerator.Model.Action action;
+                            WireGenerator.Model.Section section;
+                            XElement xElement;
+                            XAttribute xListFieldsHasSelector;
+                            IEnumerable<XElement> xElements, xFields;
+                            IEnumerable<string> xListFields;
+                            
+                            foreach (XElement xEntity in xEntities.ToList())
+                            {
+                                entity = new Entity();
+                                entity.Name = xEntity.Attribute("name").Value;
+                                entity.Title = xEntity.Attribute("title").Value;
+                                entity.HasSearch = (xEntity.Attribute("hasSearch").Value == "true") ? true : false;
+
+                                //load list screen fields
+                                xListFieldsHasSelector = (from a in xEntity.Elements("ListFields").Attributes("WithSelector") select a).FirstOrDefault();
+                                if (xListFieldsHasSelector != null)
+                                    entity.IsListScreenWithSelector = Convert.ToBoolean(xListFieldsHasSelector.Value);
+
+                                entity.ListScreenFields = new List<Field>();
+                                if (xEntity.Elements("ListFields").Count() > 0)
+                                {
+                                    xListFields = from a in xEntity.Elements("ListFields").Descendants() select a.Value;
+                                    foreach (string xListField in xListFields.ToList())
+                                    {
+                                        field = new Field();
+                                        field.FieldName = xListField;
+                                        entity.ListScreenFields.Add(field);
+                                    }
+                                }
+
+                                //load list screen actions
+                                entity.ListScreenActions = new List<WireGenerator.Model.Action>();
+                                if (xEntity.Elements("ListActions").Count() > 0)
+                                {
+                                    xElements = from a in xEntity.Elements("ListActions").Descendants() select a;
+                                    foreach (XElement xListAction in xElements)
+                                    {
+                                        action = new WireGenerator.Model.Action();
+                                        action.ActionName = xListAction.Value;
+                                        action.LinkTo = xListAction.Attribute("linkTo").Value;
+                                        entity.ListScreenActions.Add(action);
+                                    }
+                                }
+
+                                //load add screen sections and fields
+                                if (xEntity.Elements("AddFields").Count() > 0)
+                                {
+                                    xElements = from a in xEntity.Elements("AddFields").Elements("Section") select a;
+                                    entity.AddScreenSections = new List<WireGenerator.Model.Section>();
+                                    foreach (XElement xSection in xElements)
+                                    {
+                                        section = new Model.Section();
+                                        section.SectionName = xSection.Attribute("name").Value;
+                                        section.Zone = xSection.Attribute("zone").Value;
+
+                                        xFields = from a in xSection.Descendants() select a;
+                                        section.Fields = new List<Field>();
+                                        foreach (XElement xfield in xFields)
+                                        {
+                                            field = new Model.Field();
+                                            field.FieldName = xfield.Attribute("label").Value;
+                                            field.Type = Convert.ToInt32(xfield.Attribute("type").Value);
+                                            section.Fields.Add(field);
+                                        }
+                                        entity.AddScreenSections.Add(section);
+                                    }
+                                }
+
+                                //load workflow
+                                entity.Workflow = new List<WorkflowPhase>();
+                                if (xEntity.Elements("Workflow").Count() > 0)
+                                {
+                                    xElement = (from a in xEntity.Elements("Workflow") select a).FirstOrDefault();
+                                    if (xElement != null)
+                                    {
+                                        entity.WorkflowAliasName = xElement.Attribute("name").Value;
+                                        xElements = from a in xEntity.Elements("Workflow").Descendants() select a;
+                                        foreach (XElement xPhase in xElements)
+                                        {
+                                            phase = new WorkflowPhase();
+                                            phase.PhaseName = xPhase.Value;
+                                            entity.Workflow.Add(phase);
+                                        }
+                                    }
+                                }
+                                appModel.Entities.Add(entity);
+                                lstEntities.Items.Add(entity.Name);
+                            }
+                        }
+                    }
+                    #endregion
+                }
+            }
+        }
+        #endregion
+
+        #region txtSchemaName_GotFocus
+        private void txtSchemaName_GotFocus(object sender, RoutedEventArgs e)
+        {
+            if (txtSchemaName.Text == "Enter Schema Name")
+                txtSchemaName.Clear();
+        }
+        #endregion
+
+        #region txtSchemaName_LostFocus
+        private void txtSchemaName_LostFocus(object sender, RoutedEventArgs e)
+        {
+            if (txtSchemaName.Text == "")
+                txtSchemaName.Text = "Enter Schema Name";
         }
         #endregion
     }
