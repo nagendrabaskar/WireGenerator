@@ -40,12 +40,12 @@ namespace WireGenerator
 
         enum FormControlTypes : int
         {
-            TextBox = 1,
-            MultiLine = 2,
-            DropDown = 3,
-            CheckBox = 4,
-            LineItems = 5,
-            Content = 6
+            TextBox = 0,
+            MultiLine = 1,
+            DropDown = 2,
+            CheckBox = 3,
+            LineItems = 4,
+            Content = 5
         }
 
         enum UserForms : int
@@ -53,6 +53,14 @@ namespace WireGenerator
             AppMain = 1,
             AppNavigation = 2,
             AppEntities = 3
+        }
+
+        enum FieldDataTypes : int
+        { 
+            ShortString = 0,
+            ShortInteger = 1,
+            LongString = 2,
+            LongInteger = 3
         }
         #endregion
 
@@ -167,8 +175,7 @@ namespace WireGenerator
                     menuSubItem = new MenuSubItem();
                     menuSubItem.SubItem = subel.Value;
                     if (subel.HasAttributes)
-                        //menuSubItem.LinkToURL = subel.Attribute("linkTo").Value + "_list.html";
-                        menuSubItem.LinkToURL = subel.Attribute("linkTo").Value;
+                        menuSubItem.LinkToURL = subel.Attribute("linkTo").Value + "_list.html";
                     menuItem.MenuSubItems.Add(menuSubItem);
                 }
                 xAppModal.Navigation.Add(menuItem);
@@ -396,21 +403,28 @@ namespace WireGenerator
                 content = content.Append("</thead>");
                 content = content.Append("<tbody>");
 
-                if (listData.Count() > 0)
+                Random randomInt = new Random();
+             
+                for (int i = 0; i <= 20; i++)
                 {
-                    foreach (XElement data in listData.ToList())
+                    content = content.Append("<tr>");
+                    if (listPropertiesElement.Attribute("WithSelector") != null)
+                        if (listPropertiesElement.Attribute("WithSelector").Value == "true")
+                            content = content.Append("<td class=\"text-center\"><a href=\"javascript:void(0);\"><i id=item\"" + counter + "\" class=\"phaseselect fa fa-square-o fa-lg\"></i></a></td>");
+                    foreach (XElement property in listFields.ToList())
                     {
-                        IEnumerable<XElement> columns = from c in data.Descendants() select c;
-                        content = content.Append("<tr>");
-                        if (listPropertiesElement.Attribute("WithSelector") != null)
-                            if (listPropertiesElement.Attribute("WithSelector").Value == "true")
-                                content = content.Append("<td class=\"text-center\"><a href=\"javascript:void(0);\"><i id=item\"" + counter + "\" class=\"phaseselect fa fa-square-o fa-lg\"></i></a></td>");
-                        foreach (XElement column in columns.ToList())
-                            content = content.Append("<td>" + column.Value + "</td>");
-                        content = content.Append("<td><i class=\"fa fa-edit fa-fw\"></i></td>");
-                        content = content.Append("<td><i class=\"fa fa-trash-o fa-lg\"></i></td>");
-                        content = content.Append("</tr>");
+                        if (Convert.ToInt32(property.Attribute("datatype").Value) == (int)FieldDataTypes.ShortString)
+                            content = content.Append("<td> " + Utility.RandomString(20) + " </td>");
+                        else if (Convert.ToInt32(property.Attribute("datatype").Value) == (int)FieldDataTypes.ShortInteger)
+                            content = content.Append("<td>" + randomInt.Next(0, 1000) + "</td>");
+                        if (Convert.ToInt32(property.Attribute("datatype").Value) == (int)FieldDataTypes.LongString)
+                            content = content.Append("<td> " + Utility.RandomString(40) + " </td>");
+                        else if (Convert.ToInt32(property.Attribute("datatype").Value) == (int)FieldDataTypes.LongInteger)
+                            content = content.Append("<td>" + randomInt.Next(0, 100000000) + "</td>");
                     }
+                    content = content.Append("<td><i class=\"fa fa-edit fa-fw\"></i></td>");
+                    content = content.Append("<td><i class=\"fa fa-trash-o fa-lg\"></i></td>");
+                    content = content.Append("</tr>");
                 }
                 content = content.Append("</tbody>");
                 content = content.Append("</table>");
@@ -686,8 +700,8 @@ namespace WireGenerator
             {
                 //root and application properties
                 var root = new XElement("App");
-                root.Add(new XElement("Name", this.App_Name.Text));
-                root.Add(new XElement("LoginUser", this.App_UserName.Text));
+                root.Add(new XElement("Name", txtAppName.Text));
+                root.Add(new XElement("LoginUser", txtAppUserName.Text));
 
 
                 if (appModel != null)
@@ -741,6 +755,7 @@ namespace WireGenerator
                                     {
                                         xElement = new XElement("Field");
                                         xElement.Value = listField.FieldName;
+                                        xElement.SetAttributeValue("datatype", listField.DataType);
                                         xListFields.Add(xElement);
                                     }
                                     xEntity.Add(xListFields);
@@ -777,7 +792,7 @@ namespace WireGenerator
                                         foreach (var field in section.Fields)
                                         {
                                             xElement = new XElement("Field");
-                                            xElement.SetAttributeValue("type", field.Type + 1);
+                                            xElement.SetAttributeValue("type", field.Type);
                                             xElement.SetAttributeValue("label", field.FieldName);
                                             xSection.Add(xElement);
                                         }
@@ -842,9 +857,9 @@ namespace WireGenerator
             {
                 //for Sub Menu items
                 var selectedNode = NavigationTreeView.SelectedItem as TreeViewItem;
-                var parentNode = selectedNode.Parent as TreeViewItem;
-                if (parentNode == null)
-                {
+                //var parentNode = selectedNode.Parent as TreeViewItem;
+                //if (parentNode == null)
+                //{
                     if (selectedNode == null)
                     {
                         MessageBox.Show("Select Menu Item");
@@ -878,7 +893,7 @@ namespace WireGenerator
 
                         txtMenuName.Clear();
                         txtMenuLinkToEntity.Clear();
-                    }
+                    //}
                 }
             }
 
@@ -968,6 +983,7 @@ namespace WireGenerator
             if (!string.IsNullOrEmpty(txtListFieldName.Text.Trim()))
             {
                 field.FieldName = txtListFieldName.Text.Trim();
+                field.DataType = cmbListFieldDataType.SelectedIndex;
 
                 bool isValid = true;
                 if (lstEntities.SelectedItem == null)
@@ -1366,6 +1382,8 @@ namespace WireGenerator
             {
                 txtSchemaName.Text = "Enter Schema Name";
                 txtSchemaName.Visibility = System.Windows.Visibility.Visible;
+                txtAppName.Clear();
+                txtAppUserName.Clear();
             }
             else
                 txtSchemaName.Visibility = System.Windows.Visibility.Hidden;
@@ -1383,8 +1401,8 @@ namespace WireGenerator
                     #region load appModel from xml configuration
                     if (!appSchema.IsEmpty)
                     {
-                        this.App_Name.Text = appSchema.Element("Name").Value;
-                        this.App_UserName.Text = appSchema.Element("LoginUser").Value;
+                        txtAppName.Text = appSchema.Element("Name").Value;
+                        txtAppUserName.Text = appSchema.Element("LoginUser").Value;
 
                         //navigation
                         var navigation = new XElement("Navigation");
@@ -1442,7 +1460,7 @@ namespace WireGenerator
                             XElement xElement;
                             XAttribute xListFieldsHasSelector;
                             IEnumerable<XElement> xElements, xFields;
-                            IEnumerable<string> xListFields;
+                            IEnumerable<XElement> xListFields;
                             
                             foreach (XElement xEntity in xEntities.ToList())
                             {
@@ -1459,11 +1477,12 @@ namespace WireGenerator
                                 entity.ListScreenFields = new List<Field>();
                                 if (xEntity.Elements("ListFields").Count() > 0)
                                 {
-                                    xListFields = from a in xEntity.Elements("ListFields").Descendants() select a.Value;
-                                    foreach (string xListField in xListFields.ToList())
+                                    xListFields = from a in xEntity.Elements("ListFields").Descendants() select a;
+                                    foreach (XElement xListField in xListFields.ToList())
                                     {
                                         field = new Field();
-                                        field.FieldName = xListField;
+                                        field.FieldName = xListField.Value;
+                                        field.DataType = Convert.ToInt32(xListField.Attribute("datatype").Value);
                                         entity.ListScreenFields.Add(field);
                                     }
                                 }
@@ -1547,6 +1566,20 @@ namespace WireGenerator
         {
             if (txtSchemaName.Text == "")
                 txtSchemaName.Text = "Enter Schema Name";
+        }
+        #endregion
+
+        #region cbmListFieldDataType_Loaded
+        private void cbmListFieldDataType_Loaded(object sender, RoutedEventArgs e)
+        {
+            List<string> dataTypes = new List<string>();
+            dataTypes.Add("Short String");
+            dataTypes.Add("Short Integer");
+            dataTypes.Add("Long String");
+            dataTypes.Add("Long Integer");
+            this.cmbListFieldDataType.ItemsSource = dataTypes;
+
+            this.cmbListFieldDataType.SelectedIndex = 0;
         }
         #endregion
     }

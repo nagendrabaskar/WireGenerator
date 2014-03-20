@@ -10,6 +10,7 @@ namespace WireGenerator.Model
     {
         public string FieldName { get; set; }
         public int Type { get; set; }
+        public int DataType { get; set; }
         public ICollection<FieldOption> FieldOptions { get; set; }
     }
 }

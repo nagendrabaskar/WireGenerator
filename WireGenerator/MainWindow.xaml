@@ -6,8 +6,8 @@
         <Canvas Name="ContentCanvas" HorizontalAlignment="Left" Height="548" Margin="-2,2,-6,0" VerticalAlignment="Top" Width="1156">
             <Label Content="Application Name:" HorizontalAlignment="Left" Height="30" VerticalAlignment="Top" Width="111" Canvas.Left="489" Canvas.Top="12"/>
             <Label Content="User Name:" HorizontalAlignment="Left" Height="26" VerticalAlignment="Top" Width="76" Canvas.Left="804" Canvas.Top="14"/>
-            <TextBox x:Name="App_UserName" HorizontalAlignment="Left" Height="25" TextWrapping="Wrap" VerticalAlignment="Top" Width="172" Canvas.Left="876" Canvas.Top="16"/>
-            <TextBox x:Name="App_Name" HorizontalAlignment="Left" Height="23" TextWrapping="Wrap" VerticalAlignment="Top" Width="185" Canvas.Left="596" Canvas.Top="16"/>
+            <TextBox x:Name="txtAppUserName" HorizontalAlignment="Left" Height="25" TextWrapping="Wrap" VerticalAlignment="Top" Width="172" Canvas.Left="876" Canvas.Top="16"/>
+            <TextBox x:Name="txtAppName" HorizontalAlignment="Left" Height="23" TextWrapping="Wrap" VerticalAlignment="Top" Width="185" Canvas.Left="596" Canvas.Top="16"/>
 
             <TabControl Height="442" Canvas.Left="-1" Canvas.Top="55" Width="1152">
                 <TabItem x:Name="Tab_Navigation" Header="Navigation">
@@ -42,8 +42,10 @@
                                             <ListBox x:Name="lstListFields" HorizontalAlignment="Left" Height="91" VerticalAlignment="Top" Width="180" Canvas.Left="-2" Canvas.Top="5" SelectionChanged="lstListFields_SelectionChanged"/>
                                             <Label Content="Field Name:" HorizontalAlignment="Left" Height="24" VerticalAlignment="Top" Width="74" Canvas.Left="188" Canvas.Top="6"/>
                                             <TextBox x:Name="txtListFieldName" HorizontalAlignment="Left" Height="24" TextWrapping="Wrap" VerticalAlignment="Top" Width="123" Canvas.Left="269" Canvas.Top="8"/>
+                                            <Label Content="Data Type:" HorizontalAlignment="Left" Height="31" VerticalAlignment="Top" Width="74" Canvas.Left="188" Canvas.Top="41"/>
                                             <Button x:Name="btnAddListField" Content="Add" HorizontalAlignment="Left" Height="28" VerticalAlignment="Top" Width="93" Click="AddListField_Click" Canvas.Left="423" Canvas.Top="6"/>
                                             <Button x:Name="btnListFieldRemove" Content="Remove" HorizontalAlignment="Left" Height="26" VerticalAlignment="Top" Width="90" Click="RemoveListField_Click" Canvas.Left="537" Canvas.Top="8"/>
+                                            <ComboBox x:Name="cmbListFieldDataType" Height="24" Canvas.Left="268" Canvas.Top="45" Width="129" Loaded="cbmListFieldDataType_Loaded"/>
                                         </Canvas>
                                     </GroupBox>
                                     <GroupBox Header="Actions" HorizontalAlignment="Left" Height="108" VerticalAlignment="Top" Width="908" Canvas.Left="4" Canvas.Top="124">
