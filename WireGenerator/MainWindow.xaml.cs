@@ -28,7 +28,7 @@ namespace WireGenerator
     public partial class MainWindow : Window
     {
         #region variables, enums
-        private XElement appSchema;
+        private XElement appConfig;
         private AppModel appModel, xAppModal;
         private MenuSubItem menuSubItem;
         private StringBuilder content = new StringBuilder();
@@ -74,14 +74,14 @@ namespace WireGenerator
             appModel.Navigation = new List<WireGenerator.Model.MenuItem>();
 
             List<string> schemaNames = new List<string>();
-            schemaNames.Add("New...");
+            schemaNames.Add("New Configuration...");
             
             string assemblyPath = System.Reflection.Assembly.GetAssembly(typeof(MainWindow)).Location;
             string assemblyFolderPath = System.IO.Path.GetDirectoryName(assemblyPath);
             foreach (string file in Directory.GetFiles(assemblyFolderPath))
             {
                 string fileName = System.IO.Path.GetFileName(file);
-                if (file.Contains("_appschema.xml"))
+                if (file.Contains("_appconfig.xml"))
                     schemaNames.Add(fileName.Substring(0, fileName.Length - 14));
             }
 
@@ -97,9 +97,9 @@ namespace WireGenerator
             if (!string.IsNullOrEmpty(schemaAbsoluteFileName))
             {
                 //load app schema file
-                appSchema = XElement.Load(schemaAbsoluteFileName);
+                appConfig = XElement.Load(schemaAbsoluteFileName);
 
-                if (!appSchema.IsEmpty)
+                if (!appConfig.IsEmpty)
                 {
                     //select folder for saving generated files
                     var dialog = new System.Windows.Forms.FolderBrowserDialog();
@@ -123,7 +123,7 @@ namespace WireGenerator
 
                         //check for entity data available and generate the entity pages
                         //load entities
-                        IEnumerable<XElement> entities = from el in appSchema.Elements("Entities").Elements("Entity") select el;
+                        IEnumerable<XElement> entities = from el in appConfig.Elements("Entities").Elements("Entity") select el;
                         if (entities.Count() > 0)
                         {
                             foreach (var entity in entities)
@@ -166,11 +166,11 @@ namespace WireGenerator
         private StringBuilder ConstructPageNavigation()
         {
             xAppModal = new AppModel();
-            xAppModal.Name = appSchema.Element("Name").Value;
-            xAppModal.LoginUser = appSchema.Element("LoginUser").Value;
+            xAppModal.Name = appConfig.Element("Name").Value;
+            xAppModal.LoginUser = appConfig.Element("LoginUser").Value;
 
             //load the navigation 
-            IEnumerable<XElement> navMenuItems = from el in appSchema.Elements("Navigation").Elements("MenuItem") select el;
+            IEnumerable<XElement> navMenuItems = from el in appConfig.Elements("Navigation").Elements("MenuItem") select el;
             WireGenerator.Model.MenuItem menuItem;
             xAppModal.Navigation = new List<WireGenerator.Model.MenuItem>();
 
@@ -283,7 +283,7 @@ namespace WireGenerator
         #region private StringBuilder ConstructListContent(string name)
         private StringBuilder ConstructListContent(string name)
         {
-            XElement entity = ((IEnumerable<XElement>)from el in appSchema.Elements("Entities").Elements("Entity").Where(e => e.Attribute("name").Value == name) select el).First();
+            XElement entity = ((IEnumerable<XElement>)from el in appConfig.Elements("Entities").Elements("Entity").Where(e => e.Attribute("name").Value == name) select el).First();
             IEnumerable<XElement> actions = from a in entity.Elements("ListActions").Descendants() select a;
             XElement listPropertiesElement = entity.Element("ListFields");
             IEnumerable<XElement> listFields = from a in entity.Elements("ListFields").Descendants() select a;
@@ -502,7 +502,7 @@ namespace WireGenerator
         #region StringBuilder ConstructAddContent(string name)
         private StringBuilder ConstructAddContent(string name)
         {
-            XElement entity = ((IEnumerable<XElement>)from el in appSchema.Elements("Entities").Elements("Entity").Where(e => e.Attribute("name").Value == name) select el).First();
+            XElement entity = ((IEnumerable<XElement>)from el in appConfig.Elements("Entities").Elements("Entity").Where(e => e.Attribute("name").Value == name) select el).First();
             IEnumerable<XElement> zone1Elements = from a in entity.Elements("AddFields").Elements("Section").Where(a => a.Attribute("zone").Value == "1") select a;
             IEnumerable<XElement> zone2Elements = from a in entity.Elements("AddFields").Elements("Section").Where(a => a.Attribute("zone").Value == "2") select a;
 
@@ -696,13 +696,13 @@ namespace WireGenerator
         private void SaveConfiguration_Click(object sender, System.Windows.RoutedEventArgs e)
         {
 
-            if (cmbSchemaNames.SelectedIndex == 0 && txtSchemaName.Text == "Enter Schema Name")
+            if (cmbSchemaNames.SelectedIndex == 0 && txtSchemaName.Text == "Enter Configuration Name")
             {
                 schemaName = string.Empty;
-                MessageBox.Show("Enter Schema Name to save the Configuration.");
+                MessageBox.Show("Enter Configuration Name to save.");
                 txtSchemaName.Focus();
             }
-            else if (cmbSchemaNames.SelectedIndex == 0 && txtSchemaName.Text != "Enter Schema Name")
+            else if (cmbSchemaNames.SelectedIndex == 0 && txtSchemaName.Text != "Enter Configuration Name")
             {
                 schemaName = txtSchemaName.Text.Trim();
             }
@@ -837,7 +837,7 @@ namespace WireGenerator
 
                 }
                 //save xml
-                root.Save(schemaName+"_appschema.xml");
+                root.Save(schemaName+"_appconfig.xml");
                 MessageBox.Show(schemaName + " Configuration saved successfully!");
             }
         }
@@ -1391,7 +1391,7 @@ namespace WireGenerator
         {
             if (cmbSchemaNames.SelectedIndex == 0)
             {
-                txtSchemaName.Text = "Enter Schema Name";
+                txtSchemaName.Text = "Enter Configuration Name";
                 txtSchemaName.Visibility = System.Windows.Visibility.Visible;
                 txtAppName.Clear();
                 txtAppUserName.Clear();
@@ -1405,21 +1405,21 @@ namespace WireGenerator
                 appModel = new AppModel();
                 appModel.Navigation = new List<WireGenerator.Model.MenuItem>();
                 schemaName = cmbSchemaNames.SelectedItem.ToString();
-                schemaAbsoluteFileName = System.IO.Path.Combine(executableLocation, cmbSchemaNames.SelectedItem.ToString() + "_appschema.xml");
+                schemaAbsoluteFileName = System.IO.Path.Combine(executableLocation, cmbSchemaNames.SelectedItem.ToString() + "_appConfig.xml");
                 if (File.Exists(schemaAbsoluteFileName))
                 {
-                    appSchema = XElement.Load(schemaAbsoluteFileName);
+                    appConfig = XElement.Load(schemaAbsoluteFileName);
                     #region load appModel from xml configuration
-                    if (!appSchema.IsEmpty)
+                    if (!appConfig.IsEmpty)
                     {
-                        txtAppName.Text = appSchema.Element("Name").Value;
-                        txtAppUserName.Text = appSchema.Element("LoginUser").Value;
+                        txtAppName.Text = appConfig.Element("Name").Value;
+                        txtAppUserName.Text = appConfig.Element("LoginUser").Value;
 
                         //navigation
                         var navigation = new XElement("Navigation");
                         TreeViewItem node, subnode;
                         WireGenerator.Model.MenuItem menuItem;
-                        IEnumerable<XElement> navMenuItems = from el in appSchema.Elements("Navigation").Elements("MenuItem") select el;
+                        IEnumerable<XElement> navMenuItems = from el in appConfig.Elements("Navigation").Elements("MenuItem") select el;
                         if (navMenuItems.ToList().Count > 0)
                         {
                             foreach (XElement el in navMenuItems.ToList())
@@ -1459,7 +1459,7 @@ namespace WireGenerator
                         }
 
                         //entities
-                        IEnumerable<XElement> xEntities = from el in appSchema.Elements("Entities").Elements("Entity") select el;
+                        IEnumerable<XElement> xEntities = from el in appConfig.Elements("Entities").Elements("Entity") select el;
                         appModel.Entities = new List<Entity>();
                         if (xEntities.ToList().Count > 0)
                         {
@@ -1567,7 +1567,7 @@ namespace WireGenerator
         #region txtSchemaName_GotFocus
         private void txtSchemaName_GotFocus(object sender, RoutedEventArgs e)
         {
-            if (txtSchemaName.Text == "Enter Schema Name")
+            if (txtSchemaName.Text == "Enter Configuration Name")
                 txtSchemaName.Clear();
         }
         #endregion
@@ -1576,7 +1576,7 @@ namespace WireGenerator
         private void txtSchemaName_LostFocus(object sender, RoutedEventArgs e)
         {
             if (txtSchemaName.Text == "")
-                txtSchemaName.Text = "Enter Schema Name";
+                txtSchemaName.Text = "Enter Configuration Name";
         }
         #endregion
 
