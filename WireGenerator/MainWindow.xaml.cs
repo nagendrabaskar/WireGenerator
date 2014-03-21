@@ -34,7 +34,7 @@ namespace WireGenerator
         private StringBuilder content = new StringBuilder();
         private int counter;
         private bool lineItemModelSnippetAdded;
-        private string destinationPath = "c:/WireFrames/";
+        private string destinationPath;
         private string schemaAbsoluteFileName = string.Empty;
         private string schemaName = string.Empty;
 
@@ -94,56 +94,67 @@ namespace WireGenerator
         #region GenerateOnClick(object sender, RoutedEventArgs e)
         private void GenerateOnClick(object sender, RoutedEventArgs e)
         {
-            //load app schema file
-            appSchema = XElement.Load(schemaAbsoluteFileName);
-
-            if (!appSchema.IsEmpty)
+            if (!string.IsNullOrEmpty(schemaAbsoluteFileName))
             {
-                //first, clear the existing files in the wireframes destination folder
-                WireGenerator.Utility.DeleteDestinationFolder(destinationPath);
-                //then, copy the supporting js, css and image file assets to the wireframes destination folder
-                WireGenerator.Utility.CopyAssets(@"assets", destinationPath + "assets/");
+                //load app schema file
+                appSchema = XElement.Load(schemaAbsoluteFileName);
 
-                //generate home page
-                content = this.ConstructPageHeader();
-                content = this.ConstructPageNavigation();
-                content = content.Append("<div class=\"container-fluid fullheight\">");
-                content = content.Append("<div class=\"row\">");
-                content = this.ConstructPageFooter();
-                this.CreateFile("index.html", content);
-
-                //check for entity data available and generate the entity pages
-                //load entities
-                IEnumerable<XElement> entities = from el in appSchema.Elements("Entities").Elements("Entity") select el;
-                if (entities.Count() > 0)
+                if (!appSchema.IsEmpty)
                 {
-                    foreach (var entity in entities)
+                    //select folder for saving generated files
+                    var dialog = new System.Windows.Forms.FolderBrowserDialog();
+                    System.Windows.Forms.DialogResult result = dialog.ShowDialog();
+                    if (result == System.Windows.Forms.DialogResult.OK)
                     {
-                        content.Clear();
-                        //generate entity list page
-                        content = this.ConstructPageHeader();
-                        content = this.ConstructPageNavigation();
-                        content = content.Append("<div class=\"container-fluid fullheight\">");
-                        content = content.Append("<div class=\"row\">");
-                        content = this.ConstructListContent(entity.Attribute("name").Value);
-                        content = this.ConstructPageFooter();
-                        this.CreateFile(entity.Attribute("name").Value + "_list.html", content);
+                        destinationPath = dialog.SelectedPath + "/";
 
-                        content.Clear();
-                        //generate entity add page
-                        lineItemModelSnippetAdded = false;
+                        //first, clear the existing files in the wireframes destination folder
+                        WireGenerator.Utility.DeleteDestinationFolder(destinationPath);
+                        //then, copy the supporting js, css and image file assets to the wireframes destination folder
+                        WireGenerator.Utility.CopyAssets(@"assets", destinationPath + "assets/");
+
+                        //generate home page
                         content = this.ConstructPageHeader();
                         content = this.ConstructPageNavigation();
                         content = content.Append("<div class=\"container-fluid fullheight\">");
                         content = content.Append("<div class=\"row\">");
-                        content = this.ConstructAddContent(entity.Attribute("name").Value);
                         content = this.ConstructPageFooter();
-                        this.CreateFile(entity.Attribute("name").Value + "_add.html", content);
+                        this.CreateFile("index.html", content);
+
+                        //check for entity data available and generate the entity pages
+                        //load entities
+                        IEnumerable<XElement> entities = from el in appSchema.Elements("Entities").Elements("Entity") select el;
+                        if (entities.Count() > 0)
+                        {
+                            foreach (var entity in entities)
+                            {
+                                content.Clear();
+                                //generate entity list page
+                                content = this.ConstructPageHeader();
+                                content = this.ConstructPageNavigation();
+                                content = content.Append("<div class=\"container-fluid fullheight\">");
+                                content = content.Append("<div class=\"row\">");
+                                content = this.ConstructListContent(entity.Attribute("name").Value);
+                                content = this.ConstructPageFooter();
+                                this.CreateFile(entity.Attribute("name").Value + "_list.html", content);
+
+                                content.Clear();
+                                //generate entity add page
+                                lineItemModelSnippetAdded = false;
+                                content = this.ConstructPageHeader();
+                                content = this.ConstructPageNavigation();
+                                content = content.Append("<div class=\"container-fluid fullheight\">");
+                                content = content.Append("<div class=\"row\">");
+                                content = this.ConstructAddContent(entity.Attribute("name").Value);
+                                content = this.ConstructPageFooter();
+                                this.CreateFile(entity.Attribute("name").Value + "_add.html", content);
+                            }
+                        }
                     }
                 }
+
+                MessageBox.Show("Wire frames saved.");
             }
-        
-            MessageBox.Show("done!");
         }
         #endregion
 

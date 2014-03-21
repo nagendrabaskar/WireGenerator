@@ -116,7 +116,7 @@
                 </TabItem>
             </TabControl>
             <Button Content="Generate" Height="28" Canvas.Left="994" Canvas.Top="506" Width="118" Click="GenerateOnClick"/>
-            <Button x:Name="SaveConfigButton" Content="Save Configuration" Height="30" Canvas.Left="855" Canvas.Top="505" Width="124" Click="SaveConfiguration_Click"/>
+            <Button x:Name="SaveConfigButton" Content="Save Configuration" Height="30" Canvas.Left="855" Canvas.Top="505" Width="118" Click="SaveConfiguration_Click"/>
             <ComboBox x:Name="cmbSchemaNames" Height="26" Canvas.Left="15" Canvas.Top="15" Width="170" SelectionChanged="cmbSchemaNames_SelectionChanged"/>
             <TextBox x:Name="txtSchemaName" Height="23" Canvas.Left="204" TextWrapping="Wrap" Text="Enter Schema Name" Canvas.Top="18" Width="170" GotFocus="txtSchemaName_GotFocus" LostFocus="txtSchemaName_LostFocus"/>
         </Canvas>
