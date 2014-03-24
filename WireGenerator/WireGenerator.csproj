@@ -36,6 +36,7 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Core" />
@@ -53,6 +54,12 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Model\Action.cs" />
+    <Compile Include="Model\Entity.cs" />
+    <Compile Include="Model\Field.cs" />
+    <Compile Include="Model\FieldOption.cs" />
+    <Compile Include="Model\Section.cs" />
+    <Compile Include="Model\WorkflowPhase.cs" />
     <Compile Include="Utility.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
@@ -107,12 +114,6 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="AppSchema.xml">
-      <SubType>Designer</SubType>
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
-  <ItemGroup>
     <Content Include="assets\Bootstrap\Bootstrap-datepicker.css" />
     <Content Include="assets\Bootstrap\Bootstrap-datepicker.js" />
     <Content Include="assets\Bootstrap\bootstrap-hover-dropdown.js" />
@@ -150,23 +151,11 @@
     <Content Include="assets\css\jqueryui\jquery-ui-1.10.4.custom.css" />
     <Content Include="assets\css\jqueryui\jquery-ui-1.10.4.custom.min.css" />
     <Content Include="assets\css\wiremaker-main.css" />
-    <Resource Include="assets\icons\Adobe-PDF-Document-icon.png" />
-    <Resource Include="assets\icons\Microsoft-Word-icon.png" />
     <Resource Include="assets\Images\asc.gif" />
-    <Resource Include="assets\Images\browserlogos\chrome.png" />
-    <Resource Include="assets\Images\browserlogos\firefox.png" />
-    <Resource Include="assets\Images\browserlogos\ie.png" />
-    <Resource Include="assets\Images\browserlogos\safari.png" />
     <Resource Include="assets\Images\desc.gif" />
     <Resource Include="assets\Images\empty.gif" />
-    <Resource Include="assets\Images\excel.png" />
     <Resource Include="assets\Images\loading.gif" />
-    <Resource Include="assets\Images\Profiles\user-no-photo.png" />
-    <Resource Include="assets\Images\underconstruction.jpg" />
-    <Resource Include="assets\Images\word.png" />
     <Content Include="assets\js\common.js" />
-    <Content Include="assets\js\Copy.js" />
-    <Content Include="assets\js\date.js" />
     <Content Include="assets\js\jquery.bxslider.min.js" />
     <Content Include="assets\js\jquery.fitvids.min.js" />
     <Content Include="assets\js\jquery\1.8.1\jquery-1.8.1.min.js" />
@@ -185,6 +174,7 @@
     <Content Include="assets\js\mustache\mustache.js" />
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="assets\icons\" />
     <Folder Include="bin\Debug\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

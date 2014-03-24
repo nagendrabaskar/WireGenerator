@@ -11,5 +11,6 @@ namespace WireGenerator.Model
         public string Name { get; set; }
         public string LoginUser { get; set; }
         public ICollection<MenuItem> Navigation { get; set; }
+        public ICollection<Entity> Entities { get; set; }
     }
 }
