@@ -553,7 +553,7 @@ namespace WireGenerator
                     {
                         //for checkbox
                         IEnumerable<string> options = from a in field.Elements("Options").Descendants() select a.Attribute("label").Value;
-                        content = content.Append(this.FormControlSnippet(Convert.ToInt32(field.Attribute("type").Value), field.Attribute("label").Value, options.ToList()));
+                        content = content.Append(this.FormControlSnippet(Convert.ToInt32(field.Attribute("type").Value), field.Attribute("label").Value));
                     }
                     else
                     {
@@ -574,7 +574,7 @@ namespace WireGenerator
         #endregion
 
         #region private StringBuilder FormControlSnippet(int controlType, string label)
-        private StringBuilder FormControlSnippet(int controlType, string label = "", List<string> options = null)
+        private StringBuilder FormControlSnippet(int controlType, string label = "")
         {
             StringBuilder controlSnippet = new StringBuilder();
             string id;
@@ -628,11 +628,7 @@ namespace WireGenerator
                         controlSnippet = controlSnippet.Append("<div class=\"row\">");
                         controlSnippet = controlSnippet.Append("<div class=\"col-md-12\">");
                         controlSnippet = controlSnippet.Append("<div class=\"btn-group\">");
-                        //foreach (var option in options)
-                        //{
-                        //    id = option.Replace(" ", string.Empty);
-                        //    controlSnippet = controlSnippet.Append("<a class=\"btn btn-sm btn-default\" id=\"" + id + "Btn\" href=\"javascript:SwitchCheckBoxButton('" + id + "');\"><i id=\"" + id + "Text\" class=\"fa fa-lg valign fa-check-square-o\"></i>&nbsp;" + option + "</a>");
-                        //}
+                        controlSnippet = controlSnippet.Append("<a class=\"btn btn-sm btn-default\" id=\"Btn\" href=\"\"><i id=\"Text\" class=\"fa fa-lg valign fa-check-square-o\"></i>&nbsp;" + label + "</a>");
                         controlSnippet = controlSnippet.Append("</div>");
                         controlSnippet = controlSnippet.Append("</div>");
                         controlSnippet = controlSnippet.Append("</div>");
