@@ -86,7 +86,32 @@
                                         </Canvas>
                                     </GroupBox>
                                     <Button x:Name="btnRemoveSection" Content="Remove" HorizontalAlignment="Left" Height="24" Margin="790,20,0,0" VerticalAlignment="Top" Width="82" Click="RemoveSection_Click"/>
-                                    <TreeView x:Name="AddScreenSectionFieldsTreeView" HorizontalAlignment="Left" Height="291" Margin="4,5,0,0" VerticalAlignment="Top" Width="197"/>
+                                    <!--Sorting TreeViewField-->
+                                    <DockPanel LastChildFill="True" Width="205" Margin="-1,0,717,0">
+                                        <WrapPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right">
+                                            <Button VerticalAlignment="Bottom" Width="100" Height="26" Content="Move Down" Click="TreeViewFieldMoveDown_Click" />
+                                            <Button VerticalAlignment="Bottom" Width="101" Height="26" Content="Move Up" Click="TreeViewFieldMoveUp_Click" />
+                                        </WrapPanel>
+                                        <TreeView x:Name="AddScreenSectionFieldsTreeView" HorizontalAlignment="Left" Height="272" Margin="4,5,0,0" VerticalAlignment="Top" Width="200">
+                                            <TreeView.ItemTemplate>
+                                                <HierarchicalDataTemplate ItemsSource="{Binding Items}">
+                                                    <TextBlock Text="{Binding Value}" />
+                                                    <HierarchicalDataTemplate.ItemTemplate>
+                                                        <DataTemplate>
+                                                            <TextBlock Text="{Binding Value}" />
+                                                        </DataTemplate>
+                                                    </HierarchicalDataTemplate.ItemTemplate>
+                                                </HierarchicalDataTemplate>
+                                            </TreeView.ItemTemplate>
+                                            <TreeView.ItemContainerStyle>
+                                                <Style TargetType="TreeViewItem">
+                                                    <Setter Property="IsSelected" Value="{Binding IsSelected, Mode=TwoWay}" />
+                                                    <Setter Property="IsExpanded" Value="True" />
+                                                </Style>
+                                            </TreeView.ItemContainerStyle>
+                                        </TreeView>
+                                    </DockPanel>
+                                    <!--Sorting TreeViewField-->
                                 </Grid>
                             </TabItem>
                             <TabItem x:Name="tabEntityWorkflow" Header="Workflow">
