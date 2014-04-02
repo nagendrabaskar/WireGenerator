@@ -27,7 +27,7 @@ namespace WireGenerator
     /// 
     public partial class MainWindow : Window
     {
-        #region variables, enums, properties
+        #region variables, enums
         private XElement appConfig;
         private AppModel appModel, xAppModal;
         private MenuSubItem menuSubItem;
@@ -37,7 +37,6 @@ namespace WireGenerator
         private string destinationPath;
         private string schemaAbsoluteFileName = string.Empty;
         private string schemaName = string.Empty;
-        private string _previousEntity;
 
         readonly TreeViewItemModel rootNode = new TreeViewItemModel("Root");
         
@@ -64,12 +63,6 @@ namespace WireGenerator
             ShortInteger = 1,
             LongString = 2,
             LongInteger = 3
-        }
-
-        public string PreviousEntity
-        {
-            get { return _previousEntity; }
-            set { _previousEntity = value; }
         }
         #endregion
 
@@ -541,7 +534,7 @@ namespace WireGenerator
                 content = content.Append("<div class=\"panel panel-default\">");
                 content = content.Append("<div class=\"panel-heading juneoedit\">" + section.Attribute("name").Value + "</div>");
                 content = content.Append("<div class=\"panel-body juneoedit\">");
-                foreach (XElement field in section.Descendants())
+                foreach (XElement field in section.Descendants().OrderBy(ob => ob.Attribute("index").Value))
                     content = content.Append(this.FormControlSnippet(Convert.ToInt32(field.Attribute("type").Value), field.Attribute("label").Value));
                 content = content.Append("</div>");
                 content = content.Append("</div>");
@@ -555,7 +548,7 @@ namespace WireGenerator
                 content = content.Append("<div class=\"panel-heading juneoedit\">Label</div>");
                 content = content.Append("<div class=\"panel-body juneoedit\">");
 
-                foreach (XElement field in section.Descendants("Field"))
+                foreach (XElement field in section.Descendants("Field").OrderBy(ob => ob.Attribute("index").Value))
                 {
                     if (field.Attribute("type").Value == "5")
                     {
@@ -710,7 +703,7 @@ namespace WireGenerator
                 schemaName = txtSchemaName.Text.Trim();
             }
 
-            if (schemaName != string.Empty )
+            if (schemaName != string.Empty)
             {
                 //root and application properties
                 var root = new XElement("App");
@@ -1115,7 +1108,7 @@ namespace WireGenerator
                     treeItem.Header = this.txtSectionName.Text.Trim();
 
                     WireGenerator.Model.Section section = new WireGenerator.Model.Section();
-                    section.SectionId = entity.AddScreenSections.Count + 1;
+                    section.SectionId = entity.AddScreenSections.Max(m => m.SectionId) + 1;
                     section.SectionName = txtSectionName.Text.Trim();
                     section.Zone = (cmbZone.SelectedIndex + 1).ToString();
 
@@ -1335,19 +1328,6 @@ namespace WireGenerator
             {
                 if (entity.AddScreenSections.Count > 0)
                 {
-                    // set index value for the previous selected entity
-                    foreach (var root in rootNode.Items)
-                    {
-                        var previousEntity = appModel.Entities.Where(a => a.Name == PreviousEntity).First();
-                        var parentNodeIndex = rootNode.Items.IndexOf(root);
-                        foreach (var item in root.Items)
-                        {
-                            var field = previousEntity.AddScreenSections.ElementAt(parentNodeIndex).Fields.Where(f => f.FieldName == item.Value).Single();
-                            int index = previousEntity.AddScreenSections.ElementAt(parentNodeIndex).Fields.ToList().IndexOf(field);
-                            previousEntity.AddScreenSections.ElementAt(parentNodeIndex).Fields.ElementAt(index).Index = root.Items.IndexOf(item);
-                        }
-                    }
-
                     // reset root node for treeview
                     rootNode.Items.Clear();
                     AddScreenSectionFieldsTreeView.ItemsSource = null;
@@ -1371,8 +1351,6 @@ namespace WireGenerator
                     }
                 }
             }
-
-            PreviousEntity = lstEntities.SelectedItem.ToString();
 
             lstPhases.ItemsSource = entity.Workflow.Select(w => w.PhaseName).ToList();
             if (!string.IsNullOrEmpty(entity.WorkflowAliasName))
@@ -1657,6 +1635,7 @@ namespace WireGenerator
                 {
                     element.Items.RemoveAt(childNodeIndex);
                     element.Items.Insert(childNodeIndex + 1, selectedChildNode);
+                    SetTreeViewIndex();
                 }
             }
         }
@@ -1679,6 +1658,27 @@ namespace WireGenerator
                 {
                     element.Items.RemoveAt(childNodeIndex);
                     element.Items.Insert(childNodeIndex - 1, selectedChildNode);
+                    SetTreeViewIndex();
+                }
+            }
+        }
+        #endregion
+
+        #region SetTreeViewIndex()
+        /// <summary>
+        /// Set tree view index for the selected entity
+        /// </summary>
+        private void SetTreeViewIndex()
+        {
+            foreach (var root in rootNode.Items)
+            {
+                var selectedEntity = appModel.Entities.Where(a => a.Name == lstEntities.SelectedItem.ToString()).First();
+                var selectedIndex = rootNode.Items.IndexOf(root);
+                foreach (var item in root.Items)
+                {
+                    var field = selectedEntity.AddScreenSections.ElementAt(selectedIndex).Fields.Where(f => f.FieldName == item.Value).Single();
+                    int index = selectedEntity.AddScreenSections.ElementAt(selectedIndex).Fields.ToList().IndexOf(field);
+                    selectedEntity.AddScreenSections.ElementAt(selectedIndex).Fields.ElementAt(index).Index = root.Items.IndexOf(item);
                 }
             }
         }
