@@ -38,6 +38,8 @@ namespace WireGenerator
         private string schemaAbsoluteFileName = string.Empty;
         private string schemaName = string.Empty;
 
+        readonly TreeViewItemModel rootNode = new TreeViewItemModel("Root");
+        
         enum FormControlTypes : int
         {
             TextBox = 0,
@@ -87,7 +89,6 @@ namespace WireGenerator
 
             cmbSchemaNames.ItemsSource = schemaNames;
             cmbSchemaNames.SelectedIndex = 0;
-
         }
         #endregion
 
@@ -533,7 +534,7 @@ namespace WireGenerator
                 content = content.Append("<div class=\"panel panel-default\">");
                 content = content.Append("<div class=\"panel-heading juneoedit\">" + section.Attribute("name").Value + "</div>");
                 content = content.Append("<div class=\"panel-body juneoedit\">");
-                foreach (XElement field in section.Descendants())
+                foreach (XElement field in section.Descendants().OrderBy(ob => ob.Attribute("index").Value))
                     content = content.Append(this.FormControlSnippet(Convert.ToInt32(field.Attribute("type").Value), field.Attribute("label").Value));
                 content = content.Append("</div>");
                 content = content.Append("</div>");
@@ -547,7 +548,7 @@ namespace WireGenerator
                 content = content.Append("<div class=\"panel-heading juneoedit\">Label</div>");
                 content = content.Append("<div class=\"panel-body juneoedit\">");
 
-                foreach (XElement field in section.Descendants("Field"))
+                foreach (XElement field in section.Descendants("Field").OrderBy(ob => ob.Attribute("index").Value))
                 {
                     if (field.Attribute("type").Value == "5")
                     {
@@ -691,7 +692,6 @@ namespace WireGenerator
         #region void SaveConfiguration_Click
         private void SaveConfiguration_Click(object sender, System.Windows.RoutedEventArgs e)
         {
-
             if (cmbSchemaNames.SelectedIndex == 0 && txtSchemaName.Text == "Enter Configuration Name")
             {
                 schemaName = string.Empty;
@@ -703,13 +703,12 @@ namespace WireGenerator
                 schemaName = txtSchemaName.Text.Trim();
             }
 
-            if (schemaName != string.Empty )
+            if (schemaName != string.Empty)
             {
                 //root and application properties
                 var root = new XElement("App");
                 root.Add(new XElement("Name", txtAppName.Text));
                 root.Add(new XElement("LoginUser", txtAppUserName.Text));
-
 
                 if (appModel != null)
                 {
@@ -762,6 +761,7 @@ namespace WireGenerator
                                     {
                                         xElement = new XElement("Field");
                                         xElement.Value = listField.FieldName;
+                                        xElement.SetAttributeValue("index", listField.Index);
                                         xElement.SetAttributeValue("datatype", listField.DataType);
                                         xListFields.Add(xElement);
                                     }
@@ -793,6 +793,7 @@ namespace WireGenerator
                                     foreach (var section in entity.AddScreenSections)
                                     {
                                         xSection = new XElement("Section");
+                                        xSection.SetAttributeValue("id", section.SectionId);
                                         xSection.SetAttributeValue("name", section.SectionName);
                                         xSection.SetAttributeValue("zone", section.Zone);
 
@@ -801,6 +802,7 @@ namespace WireGenerator
                                             xElement = new XElement("Field");
                                             xElement.SetAttributeValue("type", field.Type);
                                             xElement.SetAttributeValue("label", field.FieldName);
+                                            xElement.SetAttributeValue("index", field.Index);
                                             xSection.Add(xElement);
                                         }
                                         xAddFields.Add(xSection);
@@ -1106,6 +1108,7 @@ namespace WireGenerator
                     treeItem.Header = this.txtSectionName.Text.Trim();
 
                     WireGenerator.Model.Section section = new WireGenerator.Model.Section();
+                    section.SectionId = entity.AddScreenSections.Max(m => m.SectionId) + 1;
                     section.SectionName = txtSectionName.Text.Trim();
                     section.Zone = (cmbZone.SelectedIndex + 1).ToString();
 
@@ -1122,13 +1125,16 @@ namespace WireGenerator
                             entity.AddScreenSections.Add(section);
                         }
                     }
-                    var treeNode = new TreeViewItem();
-                    treeNode.Header = txtSectionName.Text.Trim();
-                    AddScreenSectionFieldsTreeView.Items.Add(treeNode);
+
+                    var treeNode = new TreeViewItemModel();
+                    treeNode.Value = txtSectionName.Text.Trim();
+                    treeNode.ParentId = section.SectionId;
+                    rootNode.Items.Add(treeNode);
+
+                    AddScreenSectionFieldsTreeView.ItemsSource = rootNode.Items;
                     txtSectionName.Clear();
                 }
             }
-
         }
         #endregion
 
@@ -1137,14 +1143,16 @@ namespace WireGenerator
         {
             if (AddScreenSectionFieldsTreeView.SelectedItem != null)
             {
-                var selectedNode = AddScreenSectionFieldsTreeView.SelectedItem as TreeViewItem;
-                var parentNode = selectedNode.Parent as TreeViewItem;
-                if (parentNode == null)
+                var selectedNode = (TreeViewItemModel)AddScreenSectionFieldsTreeView.SelectedItem;
+                if (selectedNode != null)
                 {
                     var entity = appModel.Entities.Where(a => a.Name.Equals(lstEntities.SelectedItem.ToString())).First();
-                    var section = entity.AddScreenSections.Where(a => a.SectionName == ((TreeViewItem)AddScreenSectionFieldsTreeView.SelectedItem).Header.ToString()).First();
+                    var section = entity.AddScreenSections.Where(a => a.SectionId == selectedNode.ParentId).First();
                     entity.AddScreenSections.Remove(section);
-                    AddScreenSectionFieldsTreeView.Items.RemoveAt(AddScreenSectionFieldsTreeView.Items.IndexOf(AddScreenSectionFieldsTreeView.SelectedItem));
+
+                    var root = rootNode.Items.Where(s => s.ParentId == selectedNode.ParentId).Single();
+                    var parentNodeIndex = rootNode.Items.IndexOf(root);
+                    rootNode.Items.RemoveAt(rootNode.Items.IndexOf(selectedNode));
                 }
             }
         }
@@ -1183,7 +1191,7 @@ namespace WireGenerator
         {
             bool isValid = true;
 
-            var selectedNode = AddScreenSectionFieldsTreeView.SelectedItem as TreeViewItem;
+            var selectedNode = (TreeViewItemModel)AddScreenSectionFieldsTreeView.SelectedItem;
             if (selectedNode == null)
             {
                 MessageBox.Show("Select Section Item");
@@ -1194,7 +1202,7 @@ namespace WireGenerator
             {
                 WireGenerator.Model.Section section;
                 var entity = appModel.Entities.Where(a => a.Name.Equals(lstEntities.SelectedItem.ToString())).First();
-                var entitySection = entity.AddScreenSections.Where(s => s.SectionName == selectedNode.Header.ToString()).First();
+                var entitySection = entity.AddScreenSections.Where(s => s.SectionName == selectedNode.Value).First();
 
                 if (entitySection.Fields != null)
                 {
@@ -1208,15 +1216,22 @@ namespace WireGenerator
                     if (entitySection.Fields == null)
                         entitySection.Fields = new List<Field>();
 
+                    var root = rootNode.Items.Where(s => s.ParentId == selectedNode.ParentId).Single();
+                    var parentNodeIndex = rootNode.Items.IndexOf(root);
+                    var fieldNode = rootNode.Items.ElementAt(parentNodeIndex).Items.LastOrDefault();
+                    var tabIndex = (fieldNode != null) ? rootNode.Items.ElementAt(parentNodeIndex).Items.IndexOf(fieldNode) + 1 : default(int);
+
                     Field field = new Field();
                     field.FieldName = txtAddScreenFieldName.Text.Trim();
                     field.Type = cmbAddScreenFieldType.SelectedIndex;
+                    field.Index = tabIndex;
                     section = new Model.Section();
                     entitySection.Fields.Add(field);
 
-                    var treeNode = new TreeViewItem();
-                    treeNode.Header = txtAddScreenFieldName.Text;
+                    var treeNode = new TreeViewItemModel(field.FieldName);
+                    treeNode.ParentId = entitySection.SectionId;
                     selectedNode.Items.Add(treeNode);
+
                     txtAddScreenFieldName.Clear();
                 }
             }
@@ -1228,15 +1243,17 @@ namespace WireGenerator
         {
             if (AddScreenSectionFieldsTreeView.SelectedItem != null)
             {
-                var selectedNode = AddScreenSectionFieldsTreeView.SelectedItem as TreeViewItem;
-                var parentNode = selectedNode.Parent as TreeViewItem;
-                if (parentNode != null)
+                var selectedNode = (TreeViewItemModel)AddScreenSectionFieldsTreeView.SelectedItem;
+                if (selectedNode != null)
                 {
                     var entity = appModel.Entities.Where(a => a.Name.Equals(lstEntities.SelectedItem.ToString())).First();
-                    var section = entity.AddScreenSections.Where(a => a.SectionName == parentNode.Header.ToString()).First();
-                    var field = section.Fields.Where(f => f.FieldName == ((TreeViewItem)AddScreenSectionFieldsTreeView.SelectedItem).Header.ToString()).First();
+                    var section = entity.AddScreenSections.Where(a => a.SectionId == selectedNode.ParentId).First();
+                    var field = section.Fields.Where(f => f.FieldName == selectedNode.Value).First();
                     section.Fields.Remove(field);
-                    parentNode.Items.RemoveAt(parentNode.Items.IndexOf(AddScreenSectionFieldsTreeView.SelectedItem));
+
+                    var root = rootNode.Items.Where(s => s.ParentId == selectedNode.ParentId).Single();
+                    var parentNodeIndex = rootNode.Items.IndexOf(root);
+                    rootNode.Items.ElementAt(parentNodeIndex).Items.RemoveAt(rootNode.Items.ElementAt(parentNodeIndex).Items.IndexOf(selectedNode));
                 }
             }
         }
@@ -1306,27 +1323,35 @@ namespace WireGenerator
                     chkListWithSelector.IsChecked = true;
             lstListFields.ItemsSource = entity.ListScreenFields.Select(f => f.FieldName).ToList();
             lstListActions.ItemsSource = entity.ListScreenActions.Select(a => a.ActionName).ToList();
-            AddScreenSectionFieldsTreeView.Items.Clear();
+            
             if (entity.AddScreenSections != null)
             {
                 if (entity.AddScreenSections.Count > 0)
                 {
+                    // reset root node for treeview
+                    rootNode.Items.Clear();
+                    AddScreenSectionFieldsTreeView.ItemsSource = null;
                     AddScreenSectionFieldsTreeView.Items.Clear();
-                    TreeViewItem sectionTreeView, treeNode;
+                    AddScreenSectionFieldsTreeView.ItemsSource = rootNode.Items;
+
                     foreach (var section in entity.AddScreenSections)
                     {
-                        sectionTreeView = new TreeViewItem();
-                        sectionTreeView.Header = section.SectionName;
-                        foreach (var field in section.Fields)
+                        TreeViewItemModel innerNode = new TreeViewItemModel();
+                        innerNode.Value = section.SectionName;
+                        innerNode.ParentId = section.SectionId;
+
+                        foreach (var item in section.Fields.OrderBy(ob => ob.Index))
                         {
-                            treeNode = new TreeViewItem();
-                            treeNode.Header = field.FieldName;
-                            sectionTreeView.Items.Add(treeNode);
+                            TreeViewItemModel childNode = new TreeViewItemModel(item.FieldName);
+                            childNode.ParentId = section.SectionId;
+                            innerNode.Items.Add(childNode);
                         }
-                        AddScreenSectionFieldsTreeView.Items.Add(sectionTreeView);
+                        
+                        rootNode.Items.Add(innerNode);
                     }
                 }
             }
+
             lstPhases.ItemsSource = entity.Workflow.Select(w => w.PhaseName).ToList();
             if (!string.IsNullOrEmpty(entity.WorkflowAliasName))
                 txtPhaseAliasName.Text = entity.WorkflowAliasName;
@@ -1489,6 +1514,7 @@ namespace WireGenerator
                                     {
                                         field = new Field();
                                         field.FieldName = xListField.Value;
+                                        field.Index = Convert.ToInt32(xListField.Attribute("index").Value);
                                         field.DataType = Convert.ToInt32(xListField.Attribute("datatype").Value);
                                         entity.ListScreenFields.Add(field);
                                     }
@@ -1516,6 +1542,7 @@ namespace WireGenerator
                                     foreach (XElement xSection in xElements)
                                     {
                                         section = new Model.Section();
+                                        section.SectionId = Convert.ToInt32(xSection.Attribute("id").Value);
                                         section.SectionName = xSection.Attribute("name").Value;
                                         section.Zone = xSection.Attribute("zone").Value;
 
@@ -1525,6 +1552,7 @@ namespace WireGenerator
                                         {
                                             field = new Model.Field();
                                             field.FieldName = xfield.Attribute("label").Value;
+                                            field.Index = Convert.ToInt32(xfield.Attribute("index").Value);
                                             field.Type = Convert.ToInt32(xfield.Attribute("type").Value);
                                             section.Fields.Add(field);
                                         }
@@ -1587,6 +1615,72 @@ namespace WireGenerator
             this.cmbListFieldDataType.ItemsSource = dataTypes;
 
             this.cmbListFieldDataType.SelectedIndex = 0;
+        }
+        #endregion
+
+        #region TreeViewFieldMoveDown_Click
+        private void TreeViewFieldMoveDown_Click(object sender, RoutedEventArgs e)
+        {
+            TreeViewItemModel selectedChildNode = (TreeViewItemModel)AddScreenSectionFieldsTreeView.SelectedItem;
+            TreeViewItemModel selectedParentNode = (TreeViewItemModel)rootNode.Items.Where(pn => pn.ParentId == selectedChildNode.ParentId).SingleOrDefault();
+
+            if (selectedParentNode != null)
+            {
+                int parentNodeIndex = rootNode.Items.IndexOf(selectedParentNode);
+                int childNodeIndex = selectedParentNode.Items.IndexOf(selectedChildNode);
+
+                var element = rootNode.Items.ElementAt(parentNodeIndex);
+
+                if (childNodeIndex >= 0 && childNodeIndex < element.Items.Count - 1)
+                {
+                    element.Items.RemoveAt(childNodeIndex);
+                    element.Items.Insert(childNodeIndex + 1, selectedChildNode);
+                    SetTreeViewIndex();
+                }
+            }
+        }
+        #endregion
+
+        #region TreeViewFieldMoveUp_Click
+        private void TreeViewFieldMoveUp_Click(object sender, RoutedEventArgs e)
+        {
+            TreeViewItemModel selectedChildNode = (TreeViewItemModel)AddScreenSectionFieldsTreeView.SelectedItem;
+            TreeViewItemModel selectedParentNode = (TreeViewItemModel)rootNode.Items.Where(pn => pn.ParentId == selectedChildNode.ParentId).SingleOrDefault();
+
+            if (selectedParentNode != null)
+            {
+                int parentNodeIndex = rootNode.Items.IndexOf(selectedParentNode);
+                int childNodeIndex = selectedParentNode.Items.IndexOf(selectedChildNode);
+
+                var element = rootNode.Items.ElementAt(parentNodeIndex);
+
+                if (childNodeIndex > 0)
+                {
+                    element.Items.RemoveAt(childNodeIndex);
+                    element.Items.Insert(childNodeIndex - 1, selectedChildNode);
+                    SetTreeViewIndex();
+                }
+            }
+        }
+        #endregion
+
+        #region SetTreeViewIndex()
+        /// <summary>
+        /// Set tree view index for the selected entity
+        /// </summary>
+        private void SetTreeViewIndex()
+        {
+            foreach (var root in rootNode.Items)
+            {
+                var selectedEntity = appModel.Entities.Where(a => a.Name == lstEntities.SelectedItem.ToString()).First();
+                var selectedIndex = rootNode.Items.IndexOf(root);
+                foreach (var item in root.Items)
+                {
+                    var field = selectedEntity.AddScreenSections.ElementAt(selectedIndex).Fields.Where(f => f.FieldName == item.Value).Single();
+                    int index = selectedEntity.AddScreenSections.ElementAt(selectedIndex).Fields.ToList().IndexOf(field);
+                    selectedEntity.AddScreenSections.ElementAt(selectedIndex).Fields.ElementAt(index).Index = root.Items.IndexOf(item);
+                }
+            }
         }
         #endregion
     }
